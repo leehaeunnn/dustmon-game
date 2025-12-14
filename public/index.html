@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="미세먼지 센서로 작동하는 실시간 배틀 펫 게임">
+    <title>더스트몬 (DustMon) - 미세먼지 실시간 배틀 게임</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* 로딩 화면 */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        #loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            border: 8px solid rgba(255, 255, 255, 0.3);
+            border-top: 8px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 30px;
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+            animation: pulse 1.5s infinite;
+        }
+
+        .loading-subtitle {
+            margin-top: 10px;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* 파티클 배경 효과 */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.6;
+        }
+
+        /* 레벨업 효과 */
+        .level-up-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: white;
+            padding: 40px 60px;
+            border-radius: 20px;
+            font-size: 48px;
+            font-weight: 900;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(255, 215, 0, 0.5);
+            z-index: 10000;
+            animation: levelUpAnimation 2s ease-out forwards;
+        }
+
+        @keyframes levelUpAnimation {
+            0% {
+                transform: translate(-50%, -50%) scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2) rotate(10deg);
+                opacity: 1;
+            }
+            70% {
+                transform: translate(-50%, -50%) scale(0.9) rotate(-5deg);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 로딩 화면 -->
+    <div id="loading-screen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">더스트몬 (DustMon)</div>
+        <div class="loading-subtitle">로딩 중...</div>
+    </div>
+
+    <!-- 파티클 배경 -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- 상단 헤더 -->
+    <header class="header">
+        <div class="sensor-display">
+            <div class="sensor-label">실시간 미세먼지</div>
+            <div class="sensor-values">
+                <span class="pm-value">
+                    PM2.5: <span id="pm25-value">0</span> ㎍/㎥
+                </span>
+                <span class="pm-value">
+                    PM10: <span id="pm10-value">0</span> ㎍/㎥
+                </span>
+                <span class="air-quality" id="air-quality">보통</span>
+            </div>
+        </div>
+        <div class="header-info">
+            <div class="player-count">
+                접속자: <span id="player-count">0</span>명
+            </div>
+            <div class="player-name" id="player-name-display">게스트</div>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <div class="container">
+        <!-- 로비 화면 -->
+        <div id="lobby-screen" class="screen active">
+            <div class="lobby-content">
+                <h1 class="game-title">🌪️ 더스트몬 (DustMon)</h1>
+
+                <!-- 로그인 폼 -->
+                <div id="login-form" class="login-form">
+                    <input type="text" id="player-name-input" placeholder="플레이어 이름 입력" maxlength="20" autofocus>
+                    <input type="text" id="pet-name-input" placeholder="펫 이름 입력 (예: 뭉치, 별이)" maxlength="10">
+                    <div class="pet-image-upload">
+                        <div class="image-option-tabs">
+                            <button type="button" id="draw-tab-btn" class="btn btn-secondary active">✏️ 그리기</button>
+                            <button type="button" id="upload-tab-btn" class="btn btn-secondary">📁 업로드</button>
+                        </div>
+
+                        <!-- 그리기 탭 -->
+                        <div id="draw-tab" class="image-tab">
+                            <canvas id="pet-canvas" width="200" height="200"></canvas>
+                            <div class="canvas-controls">
+                                <input type="color" id="brush-color" value="#000000" title="색상 선택">
+                                <input type="range" id="brush-size" min="1" max="20" value="3" title="붓 크기">
+                                <button type="button" id="clear-canvas-btn" class="btn btn-small">🗑️ 지우기</button>
+                            </div>
+                        </div>
+
+                        <!-- 업로드 탭 -->
+                        <div id="upload-tab" class="image-tab" style="display: none;">
+                            <label for="pet-image-input" class="btn btn-secondary">🎨 이미지 파일 선택</label>
+                            <input type="file" id="pet-image-input" accept="image/*" style="display: none;">
+                            <div id="pet-image-preview" style="display: none; margin-top: 10px;">
+                                <img id="preview-img" style="max-width: 100px; max-height: 100px; border-radius: 10px;">
+                            </div>
+                        </div>
+                    </div>
+                    <button id="start-btn" class="btn btn-primary">게임 시작</button>
+                </div>
+
+                <!-- 펫 정보 -->
+                <div id="pet-info" class="pet-info hidden">
+                    <h2>내 펫</h2>
+                    <div class="pet-display">
+                        <div class="pet-sprite clickable" id="pet-sprite" title="클릭해서 경험치 획득!">
+                            <div class="pet-emoji" id="pet-emoji">🐾</div>
+                            <div class="pet-name-container">
+                                <div class="pet-name" id="pet-name-display">더스트몬</div>
+                                <button id="rename-btn" class="rename-btn" title="이름 변경 (50 골드)">✏️</button>
+                            </div>
+                            <div class="click-combo" id="click-combo" style="display:none;">콤보 x1</div>
+                        </div>
+                        <div class="pet-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">레벨:</span>
+                                <span id="pet-level">1</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">골드:</span>
+                                <span id="pet-gold" style="color: #FFD700;">100</span> 💰
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">타입:</span>
+                                <span id="pet-type">일반</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">HP:</span>
+                                <span id="pet-hp">100</span> / <span id="pet-max-hp">100</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">공격력:</span>
+                                <span id="pet-attack">20</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">방어력:</span>
+                                <span id="pet-defense">15</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">속도:</span>
+                                <span id="pet-speed">10</span>
+                            </div>
+                            <div class="exp-bar-container">
+                                <div class="stat-label">경험치:</div>
+                                <div class="exp-bar">
+                                    <div class="exp-bar-fill" id="exp-bar-fill"></div>
+                                </div>
+                                <div class="exp-text" id="exp-text">0 / 100</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 펫 케어 섹션 -->
+                    <div class="pet-care-section">
+                        <h3>펫 케어 💚</h3>
+                        <div class="care-stats">
+                            <div class="care-stat-item">
+                                <div class="care-label">
+                                    <span class="care-icon">🍖</span>
+                                    <span>배고픔</span>
+                                </div>
+                                <div class="care-bar">
+                                    <div class="care-bar-fill hunger-bar" id="hunger-bar"></div>
+                                </div>
+                                <div class="care-value" id="hunger-value">100</div>
+                            </div>
+                            <div class="care-stat-item">
+                                <div class="care-label">
+                                    <span class="care-icon">😊</span>
+                                    <span>행복도</span>
+                                </div>
+                                <div class="care-bar">
+                                    <div class="care-bar-fill happiness-bar" id="happiness-bar"></div>
+                                </div>
+                                <div class="care-value" id="happiness-value">100</div>
+                            </div>
+                            <div class="care-stat-item">
+                                <div class="care-label">
+                                    <span class="care-icon">✨</span>
+                                    <span>청결도</span>
+                                </div>
+                                <div class="care-bar">
+                                    <div class="care-bar-fill cleanliness-bar" id="cleanliness-bar"></div>
+                                </div>
+                                <div class="care-value" id="cleanliness-value">100</div>
+                            </div>
+                        </div>
+
+                        <div class="care-status" id="care-status">상태: 최상</div>
+
+                        <div class="care-actions">
+                            <button id="feed-btn" class="btn btn-care">🍖 먹이주기</button>
+                            <button id="play-btn" class="btn btn-care">🎮 놀아주기</button>
+                            <button id="clean-btn" class="btn btn-care">🧹 청소하기</button>
+                        </div>
+                    </div>
+
+                    <!-- 게임 기능들 -->
+                    <div class="game-features">
+                        <button id="shop-btn" class="btn btn-feature">🏪 상점</button>
+                        <button id="quest-btn" class="btn btn-feature">📜 퀘스트</button>
+                        <button id="minigame-btn" class="btn btn-feature">🎮 미니게임</button>
+                        <button id="ranking-btn" class="btn btn-feature">🏆 랭킹</button>
+                    </div>
+
+                    <div class="lobby-actions">
+                        <button id="match-btn" class="btn btn-battle">⚔️ 배틀 매칭</button>
+                        <button id="cancel-match-btn" class="btn btn-secondary hidden">매칭 취소</button>
+                    </div>
+                </div>
+
+                <!-- 채팅 -->
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chat-input" placeholder="메시지 입력..." maxlength="100">
+                        <button id="chat-send-btn" class="btn btn-small">전송</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 배틀 화면 -->
+        <div id="battle-screen" class="screen">
+            <div class="battle-container">
+                <div class="battle-header">
+                    <div class="battle-title" id="battle-title">배틀 진행 중</div>
+                    <div class="field-effect" id="field-effect">필드: 보통</div>
+                </div>
+
+                <div class="battle-arena">
+                    <!-- 플레이어 1 (왼쪽) -->
+                    <div class="battle-pet battle-pet-left">
+                        <div class="battle-pet-name" id="battle-pet1-name">펫1</div>
+                        <div class="battle-pet-sprite" id="battle-pet1-sprite">🐾</div>
+                        <div class="battle-pet-hp">
+                            <div class="hp-bar">
+                                <div class="hp-bar-fill" id="battle-pet1-hp-bar"></div>
+                            </div>
+                            <div class="hp-text" id="battle-pet1-hp-text">100/100</div>
+                        </div>
+                    </div>
+
+                    <!-- VS 표시 -->
+                    <div class="vs-indicator">VS</div>
+
+                    <!-- 플레이어 2 (오른쪽) -->
+                    <div class="battle-pet battle-pet-right">
+                        <div class="battle-pet-name" id="battle-pet2-name">펫2</div>
+                        <div class="battle-pet-sprite" id="battle-pet2-sprite">🐾</div>
+                        <div class="battle-pet-hp">
+                            <div class="hp-bar">
+                                <div class="hp-bar-fill" id="battle-pet2-hp-bar"></div>
+                            </div>
+                            <div class="hp-text" id="battle-pet2-hp-text">100/100</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 배틀 로그 -->
+                <div class="battle-log" id="battle-log"></div>
+
+                <!-- 배틀 액션 버튼 -->
+                <div class="battle-actions" id="battle-actions">
+                    <button class="battle-action-btn" data-action="attack">⚔️ 공격</button>
+                    <button class="battle-action-btn" data-action="defend">🛡️ 방어</button>
+                    <button class="battle-action-btn" data-action="skill" data-skill="heal">💚 회복</button>
+                    <button class="battle-action-btn" data-action="skill" data-skill="power_attack">💥 강공격</button>
+                </div>
+
+                <!-- 턴 표시 -->
+                <div class="turn-indicator" id="turn-indicator">턴 1</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 알림 모달 -->
+    <div id="notification-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-message" id="notification-message"></div>
+            <button class="btn btn-primary" id="notification-close">확인</button>
+        </div>
+    </div>
+
+    <!-- 퀘스트 모달 -->
+    <div id="quest-modal" class="modal hidden">
+        <div class="modal-content modal-large">
+            <h2>📜 일일 퀘스트</h2>
+            <div id="quest-list"></div>
+            <button class="btn btn-secondary modal-close">닫기</button>
+        </div>
+    </div>
+
+    <!-- 상점 모달 -->
+    <div id="shop-modal" class="modal hidden">
+        <div class="modal-content modal-large">
+            <h2>🏪 아이템 상점</h2>
+            <div class="gold-display">보유 골드: <span id="shop-gold">0</span> 💰</div>
+            <div id="shop-items"></div>
+            <button class="btn btn-secondary modal-close">닫기</button>
+        </div>
+    </div>
+
+    <!-- 미니게임 모달 -->
+    <div id="minigame-modal" class="modal hidden">
+        <div class="modal-content modal-large">
+            <h2>🎮 반응속도 게임</h2>
+            <div id="minigame-content">
+                <p>버튼이 초록색으로 변하면 최대한 빨리 클릭하세요!</p>
+                <button id="minigame-start-btn" class="btn btn-primary">게임 시작</button>
+                <div id="minigame-target" class="minigame-target"></div>
+                <div id="minigame-result"></div>
+            </div>
+            <button class="btn btn-secondary modal-close">닫기</button>
+        </div>
+    </div>
+
+    <!-- 펫 이름 변경 모달 -->
+    <div id="rename-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>✏️ 펫 이름 변경</h2>
+            <p>새로운 이름을 입력하세요 (비용: 50 골드)</p>
+            <input type="text" id="new-name-input" maxlength="10" placeholder="새 이름 (10글자 이하)">
+            <div class="modal-buttons">
+                <button id="confirm-rename-btn" class="btn btn-primary">변경</button>
+                <button class="btn btn-secondary modal-close">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 랭킹 모달 -->
+    <div id="ranking-modal" class="modal hidden">
+        <div class="modal-content modal-large">
+            <h2>🏆 플레이어 랭킹 TOP 10</h2>
+            <div id="ranking-list"></div>
+            <button class="btn btn-secondary modal-close">닫기</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="game.js"></script>
+
+    <!-- 파티클 효과 스크립트 -->
+    <script>
+        // 로딩 화면 숨기기
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loading-screen').classList.add('hidden');
+            }, 1500);
+        });
+
+        // 파티클 배경 효과
+        (function() {
+            const canvas = document.getElementById('particles-canvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            window.addEventListener('resize', function() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+
+            const particles = [];
+            const particleCount = 50;
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 3 + 1;
+                    this.speedX = Math.random() * 1 - 0.5;
+                    this.speedY = Math.random() * 1 - 0.5;
+                    this.opacity = Math.random() * 0.5 + 0.2;
+                }
+
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+
+                    if (this.x > canvas.width) this.x = 0;
+                    if (this.x < 0) this.x = canvas.width;
+                    if (this.y > canvas.height) this.y = 0;
+                    if (this.y < 0) this.y = canvas.height;
+                }
+
+                draw() {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                particles.forEach(particle => {
+                    particle.update();
+                    particle.draw();
+                });
+
+                // 파티클 연결선
+                particles.forEach((particleA, indexA) => {
+                    particles.slice(indexA + 1).forEach(particleB => {
+                        const dx = particleA.x - particleB.x;
+                        const dy = particleA.y - particleB.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < 100) {
+                            ctx.strokeStyle = `rgba(255, 255, 255, ${0.2 - distance / 500})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.beginPath();
+                            ctx.moveTo(particleA.x, particleA.y);
+                            ctx.lineTo(particleB.x, particleB.y);
+                            ctx.stroke();
+                        }
+                    });
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        })();
+    </script>
+</body>
+</html>
