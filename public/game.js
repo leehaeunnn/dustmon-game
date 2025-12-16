@@ -120,7 +120,7 @@ const elements = {
     rankingBtn: document.getElementById('ranking-btn'),
     renameModal: document.getElementById('rename-modal'),
     rankingModal: document.getElementById('ranking-modal'),
-    renameInput: document.getElementById('rename-input'),
+    renameInput: document.getElementById('new-name-input'),
     confirmRenameBtn: document.getElementById('confirm-rename-btn'),
     rankingList: document.getElementById('ranking-list')
 };
@@ -177,6 +177,248 @@ function playHealAnimation(element) {
     setTimeout(() => {
         element.classList.remove('heal-animation');
     }, 500);
+}
+
+// 공격 돌진 애니메이션
+function playAttackAnimation(attackerElement, isLeft) {
+    if (!attackerElement) return;
+    const animClass = isLeft ? 'attack-animation-left' : 'attack-animation-right';
+    attackerElement.classList.add(animClass);
+    setTimeout(() => {
+        attackerElement.classList.remove(animClass);
+    }, 600);
+}
+
+// 강공격 애니메이션
+function playPowerAttackAnimation(attackerElement, isLeft) {
+    if (!attackerElement) return;
+    const animClass = isLeft ? 'power-attack-animation-left' : 'power-attack-animation-right';
+    attackerElement.classList.add(animClass);
+    setTimeout(() => {
+        attackerElement.classList.remove(animClass);
+    }, 800);
+}
+
+// 피격 넉백 애니메이션
+function playHitAnimation(defenderElement, isLeft) {
+    if (!defenderElement) return;
+    const animClass = isLeft ? 'hit-animation-left' : 'hit-animation-right';
+    defenderElement.classList.add(animClass);
+    setTimeout(() => {
+        defenderElement.classList.remove(animClass);
+    }, 500);
+}
+
+// 방어 애니메이션
+function playDefendAnimation(element) {
+    if (!element) return;
+    element.classList.add('defend-animation');
+    element.classList.add('defending');
+    setTimeout(() => {
+        element.classList.remove('defend-animation');
+    }, 800);
+    // 방어 상태 2초 유지
+    setTimeout(() => {
+        element.classList.remove('defending');
+    }, 2000);
+}
+
+// 회복 이펙트 애니메이션
+function playHealEffectAnimation(element) {
+    if (!element) return;
+    element.classList.add('heal-effect-animation');
+    setTimeout(() => {
+        element.classList.remove('heal-effect-animation');
+    }, 800);
+}
+
+// 회피 애니메이션
+function playDodgeAnimation(element, isLeft) {
+    if (!element) return;
+    const animClass = isLeft ? 'dodge-animation-left' : 'dodge-animation-right';
+    element.classList.add(animClass);
+    setTimeout(() => {
+        element.classList.remove(animClass);
+    }, 500);
+}
+
+// 이펙트 오버레이 생성
+function showBattleEffect(emoji, duration = 800) {
+    const battleArena = document.querySelector('.battle-arena');
+    if (!battleArena) return;
+
+    const effect = document.createElement('div');
+    effect.className = 'battle-effect-overlay';
+    effect.textContent = emoji;
+    effect.style.position = 'absolute';
+    battleArena.style.position = 'relative';
+    battleArena.appendChild(effect);
+
+    setTimeout(() => {
+        effect.remove();
+    }, duration);
+}
+
+// (이전 자동 애니메이션 코드 제거됨 - 액션 배틀 시스템에서 직접 조작)
+
+// 공격 돌진 애니메이션 (실제 이동)
+function playRushAttackAnimation(attackerElement, isLeft, callback) {
+    if (!attackerElement) return;
+
+    // 기존 transition 저장
+    const originalTransition = attackerElement.style.transition;
+
+    // 빠른 돌진
+    attackerElement.style.transition = 'transform 0.15s ease-in';
+    const rushDistance = isLeft ? 150 : -150;
+
+    // 돌진
+    attackerElement.style.transform = `translateX(${rushDistance}px) scale(1.2)`;
+
+    // 복귀
+    setTimeout(() => {
+        attackerElement.style.transition = 'transform 0.3s ease-out';
+        attackerElement.style.transform = 'translate(0, 0) scale(1)';
+
+        setTimeout(() => {
+            attackerElement.style.transition = originalTransition || 'transform 0.3s ease-out';
+            if (callback) callback();
+        }, 300);
+    }, 200);
+}
+
+// 강공격 돌진 애니메이션 (더 강력한 이동)
+function playPowerRushAnimation(attackerElement, isLeft, callback) {
+    if (!attackerElement) return;
+
+    const originalTransition = attackerElement.style.transition;
+
+    // 뒤로 물러나기 (힘 모으기)
+    attackerElement.style.transition = 'transform 0.2s ease-out';
+    const chargeBack = isLeft ? -40 : 40;
+    attackerElement.style.transform = `translateX(${chargeBack}px) scale(1.3) rotate(${isLeft ? -10 : 10}deg)`;
+
+    // 강력한 돌진
+    setTimeout(() => {
+        attackerElement.style.transition = 'transform 0.12s ease-in';
+        const rushDistance = isLeft ? 200 : -200;
+        attackerElement.style.transform = `translateX(${rushDistance}px) scale(1.4) rotate(${isLeft ? 15 : -15}deg)`;
+
+        // 복귀
+        setTimeout(() => {
+            attackerElement.style.transition = 'transform 0.4s ease-out';
+            attackerElement.style.transform = 'translate(0, 0) scale(1) rotate(0deg)';
+
+            setTimeout(() => {
+                attackerElement.style.transition = originalTransition || 'transform 0.3s ease-out';
+                if (callback) callback();
+            }, 400);
+        }, 150);
+    }, 250);
+}
+
+// 피격 넉백 애니메이션
+function playKnockbackAnimation(defenderElement, isLeft) {
+    if (!defenderElement) return;
+
+    const originalTransition = defenderElement.style.transition;
+    const knockbackDistance = isLeft ? -60 : 60;
+
+    // 넉백 + 빨간색 플래시
+    defenderElement.style.transition = 'transform 0.1s ease-out, filter 0.1s';
+    defenderElement.style.transform = `translateX(${knockbackDistance}px) scale(0.9)`;
+    defenderElement.style.filter = 'brightness(2) sepia(1) saturate(5) hue-rotate(-50deg)';
+
+    // 흔들림
+    setTimeout(() => {
+        defenderElement.style.transform = `translateX(${knockbackDistance * 0.7}px) scale(0.95)`;
+        defenderElement.style.filter = 'brightness(1.5)';
+    }, 100);
+
+    // 복귀
+    setTimeout(() => {
+        defenderElement.style.transition = 'transform 0.3s ease-out, filter 0.3s';
+        defenderElement.style.transform = 'translate(0, 0) scale(1)';
+        defenderElement.style.filter = 'brightness(1)';
+
+        setTimeout(() => {
+            defenderElement.style.transition = originalTransition || 'transform 0.3s ease-out';
+        }, 300);
+    }, 200);
+}
+
+// 회피 점프 애니메이션
+function playDodgeJumpAnimation(element, isLeft) {
+    if (!element) return;
+
+    const originalTransition = element.style.transition;
+    const dodgeX = isLeft ? -80 : 80;
+
+    // 점프 회피
+    element.style.transition = 'transform 0.2s ease-out';
+    element.style.transform = `translate(${dodgeX}px, -50px) rotate(${isLeft ? -20 : 20}deg)`;
+    element.style.opacity = '0.7';
+
+    // 착지
+    setTimeout(() => {
+        element.style.transform = `translate(${dodgeX * 0.5}px, 0) rotate(0deg)`;
+        element.style.opacity = '1';
+    }, 200);
+
+    // 복귀
+    setTimeout(() => {
+        element.style.transition = 'transform 0.3s ease-out';
+        element.style.transform = 'translate(0, 0)';
+
+        setTimeout(() => {
+            element.style.transition = originalTransition || 'transform 0.3s ease-out';
+        }, 300);
+    }, 350);
+}
+
+// 방어 자세 애니메이션
+function playDefendStanceAnimation(element) {
+    if (!element) return;
+
+    const originalTransition = element.style.transition;
+
+    // 방어 자세
+    element.style.transition = 'transform 0.15s ease-out, filter 0.15s';
+    element.style.transform = 'scale(0.85) translateY(10px)';
+    element.style.filter = 'brightness(1.3) drop-shadow(0 0 20px #2196F3)';
+
+    // 방어 유지 (2초)
+    setTimeout(() => {
+        element.style.transition = 'transform 0.3s ease-out, filter 0.3s';
+        element.style.transform = 'scale(1) translateY(0)';
+        element.style.filter = 'brightness(1)';
+
+        setTimeout(() => {
+            element.style.transition = originalTransition || 'transform 0.3s ease-out';
+        }, 300);
+    }, 2000);
+}
+
+// 회복 애니메이션
+function playHealingAnimation(element) {
+    if (!element) return;
+
+    const originalTransition = element.style.transition;
+
+    // 빛나는 효과
+    element.style.transition = 'transform 0.3s ease-out, filter 0.3s';
+    element.style.transform = 'scale(1.15) translateY(-20px)';
+    element.style.filter = 'brightness(1.5) drop-shadow(0 0 30px #4CAF50)';
+
+    // 원래대로
+    setTimeout(() => {
+        element.style.transform = 'scale(1) translateY(0)';
+        element.style.filter = 'brightness(1)';
+
+        setTimeout(() => {
+            element.style.transition = originalTransition || 'transform 0.3s ease-out';
+        }, 300);
+    }, 600);
 }
 
 // 숫자 카운트업 애니메이션
@@ -349,6 +591,7 @@ let canvas, ctx;
 let isDrawing = false;
 let lastX = 0;
 let lastY = 0;
+let hasDrawn = false; // 캔버스에 그림을 그렸는지 추적
 
 function initCanvas() {
     canvas = elements.petCanvas;
@@ -389,6 +632,7 @@ function draw(e) {
     ctx.stroke();
 
     [lastX, lastY] = [e.offsetX, e.offsetY];
+    hasDrawn = true; // 그림을 그렸음
 }
 
 function stopDrawing() {
@@ -424,12 +668,14 @@ function handleTouchMove(e) {
     ctx.stroke();
 
     lastX = x;
+    hasDrawn = true; // 그림을 그렸음
     lastY = y;
 }
 
 function clearCanvas() {
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    hasDrawn = false; // 그림 리셋
 }
 
 // 이미지 업로드 처리
@@ -483,17 +729,20 @@ function handleStartGame() {
     elements.playerNameDisplay.textContent = playerName;
 
     // 그림판에 그린 내용이 있으면 Canvas 데이터 사용, 아니면 업로드된 이미지 사용
-    let imageData = petImageData; // 업로드된 이미지
+    let imageData = null;
 
-    // 그리기 탭이 활성화되어 있으면 Canvas 내용 사용
-    if (elements.drawTabBtn.classList.contains('active')) {
+    // 그리기 탭이 활성화되어 있고 실제로 그림을 그렸으면 Canvas 내용 사용
+    if (elements.drawTabBtn.classList.contains('active') && hasDrawn) {
         imageData = canvas.toDataURL('image/png');
+    } else if (petImageData) {
+        // 업로드 탭에서 이미지를 업로드한 경우
+        imageData = petImageData;
     }
 
     socket.emit('register-player', {
         playerName,
         petName,
-        petImage: imageData // base64 이미지 데이터 (선택사항)
+        petImage: imageData // base64 이미지 데이터 (그린 경우만)
     });
 }
 
@@ -505,7 +754,8 @@ function handleRequestMatch() {
     socket.emit('request-match');
     elements.matchBtn.classList.add('hidden');
     elements.cancelMatchBtn.classList.remove('hidden');
-    showNotification('매칭 중... 상대를 찾고 있습니다.');
+    // 토스트 형태로 표시 (확인 버튼 없음)
+    showMatchingStatus('매칭 중... 상대를 찾고 있습니다');
 }
 
 // 매칭 취소
@@ -518,7 +768,7 @@ function handleCancelMatch() {
 
 // 배틀 액션
 function handleBattleAction(e) {
-    if (!gameState.isMyTurn || !gameState.battle) return;
+    if (!gameState.battle || gameState.battle.status === "finished") return;
 
     const btn = e.target;
     const action = btn.dataset.action;
@@ -539,11 +789,6 @@ function handleBattleAction(e) {
     if (action === 'attack' || (action === 'skill' && skillId === 'power_attack')) {
         sounds.attack();
     }
-
-    // 버튼 비활성화
-    document.querySelectorAll('.battle-action-btn').forEach(b => {
-        b.disabled = true;
-    });
 }
 
 // 채팅 메시지 전송
@@ -551,8 +796,15 @@ function sendChatMessage() {
     const message = elements.chatInput.value.trim();
     if (!message) return;
 
+    // 플레이어가 등록되지 않은 경우 경고
+    if (!gameState.playerId) {
+        showNotification('먼저 게임을 시작해주세요!');
+        return;
+    }
+
     socket.emit('chat-message', message);
     elements.chatInput.value = '';
+    elements.chatInput.focus();
 }
 
 // ========== 펫 케어 핸들러 ==========
@@ -720,24 +972,27 @@ function updatePetDisplay(pet, isFirstLoad = false) {
     elements.expText.textContent = `${pet.exp} / ${pet.expToNext}`;
 
     // 이모지 또는 커스텀 이미지 변경 애니메이션
+    const renderPetImage = () => {
+        if (pet.customImage) {
+            // 커스텀 이미지가 있으면 이미지로 표시 (120px x 120px)
+            elements.petEmoji.innerHTML = `<img src="${pet.customImage}" style="width: 120px; height: 120px; object-fit: contain; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">`;
+            elements.petEmoji.style.fontSize = '0'; // 이미지 사용시 폰트 크기 제거
+        } else {
+            // 없으면 이모지 표시
+            elements.petEmoji.innerHTML = '';
+            elements.petEmoji.textContent = petTypeEmojis[pet.type] || '🐾';
+            elements.petEmoji.style.fontSize = '120px';
+        }
+    };
+
     if (oldPet && (oldPet.type !== pet.type || oldPet.customImage !== pet.customImage)) {
         elements.petSprite.style.transform = 'scale(0) rotate(360deg)';
         setTimeout(() => {
-            if (pet.customImage) {
-                // 커스텀 이미지가 있으면 이미지로 표시
-                elements.petEmoji.innerHTML = `<img src="${pet.customImage}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 10px;">`;
-            } else {
-                // 없으면 이모지 표시
-                elements.petEmoji.textContent = petTypeEmojis[pet.type] || '🐾';
-            }
+            renderPetImage();
             elements.petSprite.style.transform = 'scale(1) rotate(0deg)';
         }, 300);
     } else {
-        if (pet.customImage) {
-            elements.petEmoji.innerHTML = `<img src="${pet.customImage}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 10px;">`;
-        } else {
-            elements.petEmoji.textContent = petTypeEmojis[pet.type] || '🐾';
-        }
+        renderPetImage();
     }
 
     // 펫 케어 상태 업데이트
@@ -879,7 +1134,15 @@ function updateBattleDisplay(battle) {
 
     // 펫1 (왼쪽 - 항상 내 펫)
     elements.battlePet1Name.textContent = `${myName}의 ${myPet.name}`;
-    elements.battlePet1Sprite.textContent = petTypeEmojis[myPet.type] || '🐾';
+    // 커스텀 이미지가 있으면 이미지로, 없으면 이모지로 표시
+    if (myPet.customImage) {
+        elements.battlePet1Sprite.innerHTML = `<img src="${myPet.customImage}" style="width: 140px; height: 140px; object-fit: contain; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">`;
+        elements.battlePet1Sprite.style.fontSize = '0';
+    } else {
+        elements.battlePet1Sprite.innerHTML = '';
+        elements.battlePet1Sprite.textContent = petTypeEmojis[myPet.type] || '🐾';
+        elements.battlePet1Sprite.style.fontSize = '140px';
+    }
 
     const hpPercent1 = (myPet.stats.hp / myPet.stats.maxHp) * 100;
     elements.battlePet1HpBar.style.width = hpPercent1 + '%';
@@ -898,7 +1161,15 @@ function updateBattleDisplay(battle) {
 
     // 펫2 (오른쪽 - 항상 상대 펫)
     elements.battlePet2Name.textContent = `${enemyName}의 ${enemyPet.name}`;
-    elements.battlePet2Sprite.textContent = petTypeEmojis[enemyPet.type] || '🐾';
+    // 커스텀 이미지가 있으면 이미지로, 없으면 이모지로 표시
+    if (enemyPet.customImage) {
+        elements.battlePet2Sprite.innerHTML = `<img src="${enemyPet.customImage}" style="width: 140px; height: 140px; object-fit: contain; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">`;
+        elements.battlePet2Sprite.style.fontSize = '0';
+    } else {
+        elements.battlePet2Sprite.innerHTML = '';
+        elements.battlePet2Sprite.textContent = petTypeEmojis[enemyPet.type] || '🐾';
+        elements.battlePet2Sprite.style.fontSize = '140px';
+    }
 
     const hpPercent2 = (enemyPet.stats.hp / enemyPet.stats.maxHp) * 100;
     elements.battlePet2HpBar.style.width = hpPercent2 + '%';
@@ -915,20 +1186,54 @@ function updateBattleDisplay(battle) {
         }
     }
 
-    // 턴 표시
+    // 실시간 전투 상태 표시
     if (battle.status === 'finished') {
         elements.turnIndicator.textContent = '배틀 종료';
         elements.turnIndicator.style.animation = 'none';
     } else {
-        elements.turnIndicator.textContent = `턴 ${battle.turnNumber} - ${gameState.isMyTurn ? '내 턴!' : '상대 턴'}`;
-        if (gameState.isMyTurn) {
-            elements.turnIndicator.style.animation = 'pulse 1.5s infinite';
+        // 방어 상태 표시
+        let statusText = '⚔️ 실시간 배틀!';
+        if (battle.myDefendStatus && battle.myDefendStatus.active) {
+            statusText = '🛡️ 방어 중! (' + battle.myDefendStatus.remaining + '초)';
         }
+        if (battle.enemyDefendStatus && battle.enemyDefendStatus.active) {
+            statusText += ' | 상대 방어 중!';
+        }
+        elements.turnIndicator.textContent = statusText;
+        elements.turnIndicator.style.animation = 'pulse 1.5s infinite';
     }
 
-    // 액션 버튼 활성화/비활성화
+    // 쿨다운 기반 버튼 활성화
+    if (battle.myCooldowns) {
+        updateCooldownButtons(battle.myCooldowns, battle.status === 'finished');
+    }
+}
+
+// 쿨다운 버튼 업데이트
+function updateCooldownButtons(cooldowns, isFinished) {
     document.querySelectorAll('.battle-action-btn').forEach(btn => {
-        btn.disabled = !gameState.isMyTurn || battle.status === 'finished';
+        const action = btn.dataset.action;
+        const skillId = btn.dataset.skill;
+        const cdKey = action === 'skill' ? skillId : action;
+
+        if (isFinished) {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            return;
+        }
+
+        const cd = cooldowns[cdKey];
+        if (cd && !cd.ready) {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.textContent = btn.textContent.split(' ')[0] + ' (' + cd.remaining + 's)';
+        } else {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            // 원래 텍스트로 복원
+            const labels = { attack: '⚔️ 공격', defend: '🛡️ 방어', heal: '💚 회복', power_attack: '💥 강공격', speed_boost: '⚡ 속도' };
+            btn.textContent = labels[cdKey] || btn.textContent.split(' ')[0];
+        }
     });
 }
 
@@ -953,6 +1258,28 @@ function addBattleLog(message) {
 function showNotification(message) {
     elements.notificationMessage.textContent = message;
     elements.notificationModal.classList.remove('hidden');
+}
+
+// 매칭 중 표시 (토스트 형태 - 확인 버튼 없이)
+let matchingToast = null;
+function showMatchingStatus(message) {
+    // 기존 토스트 제거
+    hideMatchingStatus();
+
+    matchingToast = document.createElement('div');
+    matchingToast.className = 'matching-toast';
+    matchingToast.innerHTML = `
+        <div class="matching-spinner"></div>
+        <span>${message}</span>
+    `;
+    document.body.appendChild(matchingToast);
+}
+
+function hideMatchingStatus() {
+    if (matchingToast) {
+        matchingToast.remove();
+        matchingToast = null;
+    }
 }
 
 // ========================================
@@ -1016,51 +1343,88 @@ socket.on('player-count', (count) => {
 
 // 매칭 시작
 socket.on('matching-started', () => {
-    showNotification('매칭 중...');
+    showMatchingStatus('매칭 중... 상대를 찾고 있습니다');
 });
 
 // 매칭 취소
 socket.on('matching-cancelled', () => {
+    hideMatchingStatus();
     showNotification('매칭이 취소되었습니다.');
 });
 
-// 배틀 시작
-socket.on('battle-started', (battle) => {
-    gameState.isMatching = false;
-
-    // 화면 전환 애니메이션
-    elements.lobbyScreen.style.transition = 'opacity 0.5s';
-    elements.lobbyScreen.style.opacity = '0';
-
-    setTimeout(() => {
-        elements.lobbyScreen.classList.remove('active');
-        elements.battleScreen.classList.add('active');
-        elements.battleScreen.style.opacity = '0';
-
-        setTimeout(() => {
-            elements.battleScreen.style.transition = 'opacity 0.5s';
-            elements.battleScreen.style.opacity = '1';
-        }, 10);
-    }, 500);
-
-    elements.matchBtn.classList.remove('hidden');
-    elements.cancelMatchBtn.classList.add('hidden');
-
-    updateBattleDisplay(battle);
-    addBattleLog('⚔️ 배틀이 시작되었습니다!');
-});
+// 배틀 시작 - 액션 배틀 시스템으로 이동됨 (파일 하단 참조)
 
 // 배틀 업데이트
 socket.on('battle-update', (battle) => {
-    updateBattleDisplay(battle);
+    const oldBattle = gameState.battle;
 
-    // 최근 액션 로그 추가
+    // 최근 액션 확인 및 애니메이션 재생
     if (battle.actions.length > 0) {
         const lastAction = battle.actions[battle.actions.length - 1];
-        if (lastAction.result && lastAction.result.message) {
-            addBattleLog(lastAction.result.message);
+        if (lastAction.result) {
+            const isPlayer1 = battle.player1Id === socket.id;
+            const isMyAction = (lastAction.player === 'player1' && isPlayer1) ||
+                              (lastAction.player === 'player2' && !isPlayer1);
+
+            // 공격자와 방어자 요소 결정
+            const mySprite = elements.battlePet1Sprite;
+            const enemySprite = elements.battlePet2Sprite;
+            const attackerSprite = isMyAction ? mySprite : enemySprite;
+            const defenderSprite = isMyAction ? enemySprite : mySprite;
+
+            // 액션 타입에 따른 애니메이션 (실제 움직임)
+            if (lastAction.result.type === 'attack') {
+                // 공격 돌진 애니메이션
+                playRushAttackAnimation(attackerSprite, isMyAction, () => {
+                    showBattleEffect('⚔️');
+                });
+
+                // 피격 애니메이션 (공격 후 딜레이)
+                setTimeout(() => {
+                    if (lastAction.result.blocked) {
+                        playDefendStanceAnimation(defenderSprite);
+                        showBattleEffect('🛡️');
+                    } else {
+                        playKnockbackAnimation(defenderSprite, !isMyAction);
+                        showBattleEffect('💥');
+                    }
+                }, 200);
+
+            } else if (lastAction.result.type === 'skill') {
+                if (lastAction.result.skillId === 'power_attack') {
+                    // 강공격 돌진 애니메이션
+                    playPowerRushAnimation(attackerSprite, isMyAction, () => {
+                        showBattleEffect('💥');
+                    });
+
+                    setTimeout(() => {
+                        if (lastAction.result.blocked) {
+                            playDefendStanceAnimation(defenderSprite);
+                        } else {
+                            playKnockbackAnimation(defenderSprite, !isMyAction);
+                        }
+                    }, 400);
+
+                } else if (lastAction.result.skillId === 'heal') {
+                    // 회복 애니메이션
+                    playHealingAnimation(attackerSprite);
+                    showBattleEffect('💚');
+                }
+
+            } else if (lastAction.result.type === 'defend') {
+                // 방어 자세
+                playDefendStanceAnimation(attackerSprite);
+                showBattleEffect('🛡️');
+            }
+
+            // 로그 추가
+            if (lastAction.result.message) {
+                addBattleLog(lastAction.result.message);
+            }
         }
     }
+
+    updateBattleDisplay(battle);
 });
 
 // 배틀 종료
@@ -1082,6 +1446,7 @@ socket.on('battle-ended', () => {
 
             elements.battleLog.innerHTML = '';
             gameState.battle = null;
+            gameState.isMatching = false;
         }, 500);
     }, 5000);
 });
@@ -1111,6 +1476,11 @@ socket.on('error', (message) => {
         elements.startBtn.textContent = '게임 시작';
         elements.startBtn.disabled = false;
     }
+});
+
+// 액션 실패 (쿨다운)
+socket.on('action-failed', (data) => {
+    showNotification(data.message);
 });
 
 // 연결 상태
@@ -1338,6 +1708,1004 @@ socket.on('rankings-data', (rankings) => {
             </div>
         </div>
     `).join('');
+});
+
+// ========================================
+// 액션 RPG 배틀 시스템
+// ========================================
+
+// 액션 배틀 상태
+const actionBattle = {
+    active: false,
+    arena: null,
+    myPet: null,
+    enemyPet: null,
+
+    // 내 펫 상태
+    myPos: { x: 15, y: 100 }, // % 기준 위치
+    myVel: { x: 0, y: 0 },
+    myHp: 100,
+    myMaxHp: 100,
+    myDefending: false,
+    myDefendUntil: 0,
+
+    // 상대 펫 상태
+    enemyPos: { x: 75, y: 100 },
+    enemyHp: 100,
+    enemyMaxHp: 100,
+    enemyDefending: false,
+
+    // 쿨다운
+    cooldowns: {
+        melee: 0,
+        ranged: 0,
+        defend: 0,
+        item: 0
+    },
+
+    // 발사체
+    projectiles: [],
+
+    // 타이머
+    battleTimer: 60,
+    timerInterval: null,
+
+    // 게임 루프
+    gameLoop: null,
+    lastTime: 0,
+
+    // 키 입력 상태
+    keys: {
+        up: false,
+        down: false,
+        left: false,
+        right: false
+    },
+
+    // 조이스틱 상태
+    joystick: {
+        active: false,
+        startX: 0,
+        startY: 0,
+        deltaX: 0,
+        deltaY: 0
+    },
+
+    // 상수
+    MOVE_SPEED: 2,
+    MELEE_RANGE: 18, // % 기준
+    MELEE_DAMAGE: 15,
+    RANGED_DAMAGE: 10,
+    PROJECTILE_SPEED: 5,
+    ARENA_MIN_X: 3,
+    ARENA_MAX_X: 97,
+    ARENA_MIN_Y: 10,
+    ARENA_MAX_Y: 320
+};
+
+// 액션 배틀 DOM 요소
+const actionElements = {
+    arena: null,
+    myPet: null,
+    enemyPet: null,
+    myHpFill: null,
+    myHpText: null,
+    enemyHpFill: null,
+    enemyHpText: null,
+    battleTimer: null,
+    battleLog: null,
+    projectilesContainer: null,
+    effectsContainer: null,
+    joystickStick: null,
+    joystickBase: null,
+    meleeBtn: null,
+    rangedBtn: null,
+    defendBtn: null,
+    itemBtn: null
+};
+
+// 액션 배틀 초기화
+function initActionBattle() {
+    // DOM 요소 가져오기
+    actionElements.arena = document.getElementById('action-arena');
+    actionElements.myPet = document.getElementById('my-pet');
+    actionElements.enemyPet = document.getElementById('enemy-pet');
+    actionElements.myHpFill = document.getElementById('hud-my-hp');
+    actionElements.myHpText = document.getElementById('hud-my-hp-text');
+    actionElements.enemyHpFill = document.getElementById('hud-enemy-hp');
+    actionElements.enemyHpText = document.getElementById('hud-enemy-hp-text');
+    actionElements.battleTimer = document.getElementById('battle-timer');
+    actionElements.battleLog = document.getElementById('battle-log');
+    actionElements.projectilesContainer = document.getElementById('projectiles-container');
+    actionElements.effectsContainer = document.getElementById('effects-container');
+    actionElements.joystickStick = document.getElementById('joystick-stick');
+    actionElements.joystickBase = document.querySelector('.joystick-base');
+    actionElements.meleeBtn = document.getElementById('melee-btn');
+    actionElements.rangedBtn = document.getElementById('ranged-btn');
+    actionElements.defendBtn = document.getElementById('defend-btn');
+    actionElements.itemBtn = document.getElementById('item-btn');
+
+    // 키보드 이벤트
+    document.addEventListener('keydown', handleActionKeyDown);
+    document.addEventListener('keyup', handleActionKeyUp);
+
+    // 조이스틱 이벤트
+    if (actionElements.joystickBase) {
+        actionElements.joystickBase.addEventListener('mousedown', startJoystick);
+        actionElements.joystickBase.addEventListener('touchstart', startJoystick);
+        document.addEventListener('mousemove', moveJoystick);
+        document.addEventListener('touchmove', moveJoystick);
+        document.addEventListener('mouseup', endJoystick);
+        document.addEventListener('touchend', endJoystick);
+    }
+
+    // 액션 버튼 이벤트
+    if (actionElements.meleeBtn) {
+        actionElements.meleeBtn.addEventListener('click', () => performMeleeAttack());
+    }
+    if (actionElements.rangedBtn) {
+        actionElements.rangedBtn.addEventListener('click', () => performRangedAttack());
+    }
+    if (actionElements.defendBtn) {
+        actionElements.defendBtn.addEventListener('click', () => performDefend());
+    }
+    if (actionElements.itemBtn) {
+        actionElements.itemBtn.addEventListener('click', () => useItem());
+    }
+}
+
+// 키보드 입력 처리
+function handleActionKeyDown(e) {
+    if (!actionBattle.active) return;
+
+    switch (e.key.toLowerCase()) {
+        case 'w':
+        case 'arrowup':
+            actionBattle.keys.up = true;
+            break;
+        case 's':
+        case 'arrowdown':
+            actionBattle.keys.down = true;
+            break;
+        case 'a':
+        case 'arrowleft':
+            actionBattle.keys.left = true;
+            break;
+        case 'd':
+        case 'arrowright':
+            actionBattle.keys.right = true;
+            break;
+        case 'z':
+            performMeleeAttack();
+            break;
+        case 'x':
+            performRangedAttack();
+            break;
+        case 'c':
+            performDefend();
+            break;
+        case 'v':
+            useItem();
+            break;
+    }
+}
+
+function handleActionKeyUp(e) {
+    switch (e.key.toLowerCase()) {
+        case 'w':
+        case 'arrowup':
+            actionBattle.keys.up = false;
+            break;
+        case 's':
+        case 'arrowdown':
+            actionBattle.keys.down = false;
+            break;
+        case 'a':
+        case 'arrowleft':
+            actionBattle.keys.left = false;
+            break;
+        case 'd':
+        case 'arrowright':
+            actionBattle.keys.right = false;
+            break;
+    }
+}
+
+// 조이스틱 처리
+function startJoystick(e) {
+    e.preventDefault();
+    actionBattle.joystick.active = true;
+
+    const rect = actionElements.joystickBase.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    actionBattle.joystick.startX = centerX;
+    actionBattle.joystick.startY = centerY;
+}
+
+function moveJoystick(e) {
+    if (!actionBattle.joystick.active) return;
+    e.preventDefault();
+
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    const maxDistance = 40;
+    let deltaX = clientX - actionBattle.joystick.startX;
+    let deltaY = clientY - actionBattle.joystick.startY;
+
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    if (distance > maxDistance) {
+        deltaX = (deltaX / distance) * maxDistance;
+        deltaY = (deltaY / distance) * maxDistance;
+    }
+
+    // 더 빠른 반응을 위해 1.5배 증폭
+    actionBattle.joystick.deltaX = (deltaX / maxDistance) * 1.5;
+    actionBattle.joystick.deltaY = (deltaY / maxDistance) * 1.5;
+
+    if (actionElements.joystickStick) {
+        actionElements.joystickStick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+    }
+}
+
+function endJoystick(e) {
+    actionBattle.joystick.active = false;
+    actionBattle.joystick.deltaX = 0;
+    actionBattle.joystick.deltaY = 0;
+
+    if (actionElements.joystickStick) {
+        actionElements.joystickStick.style.transform = 'translate(0, 0)';
+    }
+}
+
+// 액션 배틀 시작
+function startActionBattle(battle) {
+    actionBattle.active = true;
+
+    // 내가 플레이어1인지 확인
+    const isPlayer1 = battle.player1Id === socket.id;
+    const myPetData = isPlayer1 ? battle.pet1 : battle.pet2;
+    const enemyPetData = isPlayer1 ? battle.pet2 : battle.pet1;
+
+    // HP 설정
+    actionBattle.myHp = myPetData.stats.hp;
+    actionBattle.myMaxHp = myPetData.stats.maxHp;
+    actionBattle.enemyHp = enemyPetData.stats.hp;
+    actionBattle.enemyMaxHp = enemyPetData.stats.maxHp;
+
+    // 위치 초기화
+    actionBattle.myPos = { x: 15, y: 100 };
+    actionBattle.enemyPos = { x: 75, y: 100 };
+    actionBattle.myVel = { x: 0, y: 0 };
+
+    // 쿨다운 초기화
+    actionBattle.cooldowns = { melee: 0, ranged: 0, defend: 0, item: 0 };
+
+    // 발사체 초기화
+    actionBattle.projectiles = [];
+
+    // 타이머 시작
+    actionBattle.battleTimer = 60;
+    if (actionBattle.timerInterval) clearInterval(actionBattle.timerInterval);
+    actionBattle.timerInterval = setInterval(() => {
+        actionBattle.battleTimer--;
+        if (actionElements.battleTimer) {
+            actionElements.battleTimer.textContent = actionBattle.battleTimer;
+        }
+        if (actionBattle.battleTimer <= 0) {
+            endActionBattle();
+        }
+    }, 1000);
+
+    // HUD 업데이트
+    updateActionHUD(isPlayer1 ? battle.player1Name : battle.player2Name,
+                    isPlayer1 ? battle.player2Name : battle.player1Name,
+                    myPetData, enemyPetData);
+
+    // 펫 스프라이트 설정
+    setPetSprite(actionElements.myPet, myPetData);
+    setPetSprite(actionElements.enemyPet, enemyPetData);
+
+    // 게임 루프 시작
+    actionBattle.lastTime = performance.now();
+    if (actionBattle.gameLoop) cancelAnimationFrame(actionBattle.gameLoop);
+    actionBattle.gameLoop = requestAnimationFrame(actionGameLoop);
+
+    // 로그 추가
+    addActionLog('⚔️ 액션 배틀 시작!');
+}
+
+// 펫 스프라이트 설정
+function setPetSprite(element, petData) {
+    if (!element) return;
+    const spriteDiv = element.querySelector('.pet-sprite');
+    if (!spriteDiv) return;
+
+    if (petData.customImage) {
+        spriteDiv.innerHTML = `<img src="${petData.customImage}" style="width: 80px; height: 80px; object-fit: contain; border-radius: 10px;">`;
+        spriteDiv.style.fontSize = '0';
+    } else {
+        spriteDiv.innerHTML = '';
+        spriteDiv.textContent = petTypeEmojis[petData.type] || '🐾';
+        spriteDiv.style.fontSize = '80px';
+    }
+}
+
+// HUD 업데이트
+function updateActionHUD(myName, enemyName, myPetData, enemyPetData) {
+    const myNameEl = document.getElementById('hud-my-name');
+    const enemyNameEl = document.getElementById('hud-enemy-name');
+
+    if (myNameEl) myNameEl.textContent = myName;
+    if (enemyNameEl) enemyNameEl.textContent = enemyName;
+
+    updateHpDisplay();
+}
+
+function updateHpDisplay() {
+    if (actionElements.myHpFill) {
+        const myPercent = (actionBattle.myHp / actionBattle.myMaxHp) * 100;
+        actionElements.myHpFill.style.width = myPercent + '%';
+        if (myPercent < 30) {
+            actionElements.myHpFill.classList.add('low');
+        } else {
+            actionElements.myHpFill.classList.remove('low');
+        }
+    }
+    if (actionElements.myHpText) {
+        actionElements.myHpText.textContent = `${Math.max(0, Math.floor(actionBattle.myHp))}/${actionBattle.myMaxHp}`;
+    }
+
+    if (actionElements.enemyHpFill) {
+        const enemyPercent = (actionBattle.enemyHp / actionBattle.enemyMaxHp) * 100;
+        actionElements.enemyHpFill.style.width = enemyPercent + '%';
+        if (enemyPercent < 30) {
+            actionElements.enemyHpFill.classList.add('low');
+        } else {
+            actionElements.enemyHpFill.classList.remove('low');
+        }
+    }
+    if (actionElements.enemyHpText) {
+        actionElements.enemyHpText.textContent = `${Math.max(0, Math.floor(actionBattle.enemyHp))}/${actionBattle.enemyMaxHp}`;
+    }
+}
+
+// 게임 루프
+function actionGameLoop(timestamp) {
+    if (!actionBattle.active) return;
+
+    const deltaTime = timestamp - actionBattle.lastTime;
+    actionBattle.lastTime = timestamp;
+
+    // 이동 처리
+    updateMovement(deltaTime);
+
+    // 내 위치를 서버에 전송 (60fps -> 20fps로 제한)
+    actionBattle.syncCounter = (actionBattle.syncCounter || 0) + 1;
+    if (actionBattle.syncCounter >= 3) {
+        actionBattle.syncCounter = 0;
+        sendPositionUpdate();
+    }
+
+    // 발사체 업데이트
+    updateProjectiles(deltaTime);
+
+    // 쿨다운 업데이트
+    updateCooldowns(deltaTime);
+
+    // 방어 상태 체크
+    checkDefenseStatus();
+
+    // 상대 방어 상태 체크
+    checkEnemyDefenseStatus();
+
+    // 위치 렌더링
+    renderPositions();
+
+    // 승패 체크
+    if (actionBattle.myHp <= 0 || actionBattle.enemyHp <= 0) {
+        endActionBattle();
+        return;
+    }
+
+    actionBattle.gameLoop = requestAnimationFrame(actionGameLoop);
+}
+
+// 내 위치를 서버에 전송
+function sendPositionUpdate() {
+    socket.emit('action-position', {
+        x: actionBattle.myPos.x,
+        y: actionBattle.myPos.y,
+        defending: actionBattle.myDefending
+    });
+}
+
+// 상대 방어 상태 체크
+function checkEnemyDefenseStatus() {
+    if (actionBattle.enemyDefending && actionBattle.enemyDefendUntil && Date.now() > actionBattle.enemyDefendUntil) {
+        actionBattle.enemyDefending = false;
+        if (actionElements.enemyPet) {
+            actionElements.enemyPet.classList.remove('defending');
+        }
+    }
+}
+
+// 이동 처리
+function updateMovement(deltaTime) {
+    let moveX = 0;
+    let moveY = 0;
+
+    // 키보드 입력
+    if (actionBattle.keys.left) moveX -= 1;
+    if (actionBattle.keys.right) moveX += 1;
+    if (actionBattle.keys.up) moveY += 1;
+    if (actionBattle.keys.down) moveY -= 1;
+
+    // 조이스틱 입력 (Y축 반전: 위로 드래그하면 위로 이동)
+    if (actionBattle.joystick.active) {
+        moveX += actionBattle.joystick.deltaX;
+        moveY -= actionBattle.joystick.deltaY;
+    }
+
+    // 속도 적용 (좌우는 느리게)
+    const speed = actionBattle.MOVE_SPEED * (deltaTime / 16);
+    actionBattle.myPos.x += moveX * speed * 0.5;
+    actionBattle.myPos.y += moveY * speed;
+
+    // 경계 체크
+    actionBattle.myPos.x = Math.max(actionBattle.ARENA_MIN_X,
+                                    Math.min(actionBattle.ARENA_MAX_X, actionBattle.myPos.x));
+    actionBattle.myPos.y = Math.max(actionBattle.ARENA_MIN_Y,
+                                    Math.min(actionBattle.ARENA_MAX_Y, actionBattle.myPos.y));
+
+    // 방향 전환
+    if (actionElements.myPet) {
+        if (moveX > 0) {
+            actionElements.myPet.classList.add('facing-right');
+            actionElements.myPet.classList.remove('facing-left');
+        } else if (moveX < 0) {
+            actionElements.myPet.classList.add('facing-left');
+            actionElements.myPet.classList.remove('facing-right');
+        }
+    }
+}
+
+// 위치 렌더링
+function renderPositions() {
+    if (actionElements.myPet) {
+        actionElements.myPet.style.left = actionBattle.myPos.x + '%';
+        actionElements.myPet.style.bottom = actionBattle.myPos.y + 'px';
+    }
+
+    if (actionElements.enemyPet) {
+        actionElements.enemyPet.style.left = actionBattle.enemyPos.x + '%';
+        actionElements.enemyPet.style.bottom = actionBattle.enemyPos.y + 'px';
+    }
+}
+
+// 근거리 공격
+function performMeleeAttack() {
+    if (!actionBattle.active) return;
+    if (Date.now() < actionBattle.cooldowns.melee) return;
+
+    // 쿨다운 설정 (1초)
+    actionBattle.cooldowns.melee = Date.now() + 1000;
+
+    // 거리 체크
+    const distance = Math.abs(actionBattle.myPos.x - actionBattle.enemyPos.x);
+
+    // 공격 애니메이션
+    if (actionElements.myPet) {
+        actionElements.myPet.classList.add('attacking');
+        setTimeout(() => actionElements.myPet.classList.remove('attacking'), 200);
+    }
+
+    // 이펙트 생성
+    createEffect(actionBattle.myPos.x + 5, actionBattle.myPos.y, '⚔️');
+
+    if (distance <= actionBattle.MELEE_RANGE) {
+        // 데미지 계산
+        let damage = actionBattle.MELEE_DAMAGE;
+        const isCritical = Math.random() < 0.15;
+        if (isCritical) damage *= 1.5;
+
+        // 로그
+        addActionLog(`⚔️ 근접 공격! ${Math.floor(damage)} 데미지${isCritical ? ' (크리티컬!)' : ''}`);
+
+        // 서버에 알림 (상대에게 전달됨)
+        socket.emit('action-melee', { damage: damage, isCritical: isCritical });
+    } else {
+        addActionLog('⚔️ 공격 범위 밖!');
+    }
+
+    updateCooldownDisplay();
+}
+
+// 원거리 공격
+function performRangedAttack() {
+    if (!actionBattle.active) return;
+    if (Date.now() < actionBattle.cooldowns.ranged) return;
+
+    // 쿨다운 설정 (2초)
+    actionBattle.cooldowns.ranged = Date.now() + 2000;
+
+    // 발사체 생성
+    const direction = actionBattle.enemyPos.x > actionBattle.myPos.x ? 1 : -1;
+    const projectile = {
+        id: Date.now(),
+        x: actionBattle.myPos.x,
+        y: actionBattle.myPos.y + 30,
+        velX: direction * actionBattle.PROJECTILE_SPEED,
+        damage: actionBattle.RANGED_DAMAGE,
+        isPlayer: true,
+        element: null
+    };
+
+    // 발사체 DOM 요소 생성
+    const projElement = document.createElement('div');
+    projElement.className = 'projectile player-projectile';
+    projElement.textContent = '🌟';
+    projElement.style.left = projectile.x + '%';
+    projElement.style.bottom = projectile.y + 'px';
+    if (actionElements.projectilesContainer) {
+        actionElements.projectilesContainer.appendChild(projElement);
+    }
+    projectile.element = projElement;
+
+    actionBattle.projectiles.push(projectile);
+
+    // 서버에 알림 (상대에게 발사체 생성하라고 전달)
+    socket.emit('action-ranged', { damage: actionBattle.RANGED_DAMAGE });
+
+    addActionLog('🎯 원거리 공격 발사!');
+    updateCooldownDisplay();
+}
+
+// 발사체 업데이트
+function updateProjectiles(deltaTime) {
+    const toRemove = [];
+
+    for (const proj of actionBattle.projectiles) {
+        // 위치 업데이트
+        proj.x += proj.velX * (deltaTime / 16);
+
+        // DOM 업데이트
+        if (proj.element) {
+            proj.element.style.left = proj.x + '%';
+        }
+
+        // 플레이어 발사체: 적과 충돌 체크
+        if (proj.isPlayer) {
+            const hitDistance = Math.abs(proj.x - actionBattle.enemyPos.x);
+            if (hitDistance < 8) {
+                // 데미지 적용
+                let damage = proj.damage;
+                if (actionBattle.enemyDefending) {
+                    damage *= 0.3;
+                }
+                actionBattle.enemyHp -= damage;
+                updateHpDisplay();
+
+                // 피격 효과
+                if (actionElements.enemyPet) {
+                    actionElements.enemyPet.classList.add('hit');
+                    setTimeout(() => actionElements.enemyPet.classList.remove('hit'), 300);
+                }
+
+                showDamageText(actionBattle.enemyPos.x, actionBattle.enemyPos.y, damage, false);
+                addActionLog(`🎯 명중! ${Math.floor(damage)} 데미지`);
+
+                socket.emit('action-battle-attack', { type: 'ranged', damage: damage });
+                toRemove.push(proj);
+            }
+        } else {
+            // 적 발사체: 플레이어와 충돌 체크
+            const hitDistance = Math.abs(proj.x - actionBattle.myPos.x);
+            if (hitDistance < 8) {
+                let damage = proj.damage;
+                if (actionBattle.myDefending) {
+                    damage *= 0.3;
+                }
+                actionBattle.myHp -= damage;
+                updateHpDisplay();
+
+                if (actionElements.myPet) {
+                    actionElements.myPet.classList.add('hit');
+                    setTimeout(() => actionElements.myPet.classList.remove('hit'), 300);
+                }
+
+                showDamageText(actionBattle.myPos.x, actionBattle.myPos.y, damage, false);
+                toRemove.push(proj);
+            }
+        }
+
+        // 화면 밖으로 나감
+        if (proj.x < 0 || proj.x > 100) {
+            toRemove.push(proj);
+        }
+    }
+
+    // 제거
+    for (const proj of toRemove) {
+        if (proj.element) {
+            proj.element.remove();
+        }
+        const idx = actionBattle.projectiles.indexOf(proj);
+        if (idx > -1) {
+            actionBattle.projectiles.splice(idx, 1);
+        }
+    }
+}
+
+// 방어
+function performDefend() {
+    if (!actionBattle.active) return;
+    if (Date.now() < actionBattle.cooldowns.defend) return;
+
+    // 쿨다운 설정 (5초)
+    actionBattle.cooldowns.defend = Date.now() + 5000;
+
+    // 방어 상태
+    actionBattle.myDefending = true;
+    actionBattle.myDefendUntil = Date.now() + 2000;
+
+    // 방어 애니메이션
+    if (actionElements.myPet) {
+        actionElements.myPet.classList.add('defending');
+    }
+
+    // 서버에 알림 (상대에게 방어 상태 전달)
+    socket.emit('action-defend', {});
+
+    createEffect(actionBattle.myPos.x, actionBattle.myPos.y, '🛡️');
+    addActionLog('🛡️ 방어 자세! (2초)');
+    updateCooldownDisplay();
+}
+
+// 방어 상태 체크
+function checkDefenseStatus() {
+    if (actionBattle.myDefending && Date.now() > actionBattle.myDefendUntil) {
+        actionBattle.myDefending = false;
+        if (actionElements.myPet) {
+            actionElements.myPet.classList.remove('defending');
+        }
+    }
+}
+
+// 아이템 사용
+function useItem() {
+    if (!actionBattle.active) return;
+    if (Date.now() < actionBattle.cooldowns.item) return;
+
+    // 쿨다운 설정 (10초)
+    actionBattle.cooldowns.item = Date.now() + 10000;
+
+    // HP 회복 (30%)
+    const healAmount = Math.floor(actionBattle.myMaxHp * 0.3);
+    actionBattle.myHp = Math.min(actionBattle.myMaxHp, actionBattle.myHp + healAmount);
+    updateHpDisplay();
+
+    // 회복 애니메이션
+    if (actionElements.myPet) {
+        actionElements.myPet.classList.add('healing');
+        setTimeout(() => actionElements.myPet.classList.remove('healing'), 500);
+    }
+
+    // 서버에 알림 (상대에게 회복 이펙트 표시 및 HP 동기화)
+    socket.emit('action-heal', { hp: actionBattle.myHp });
+
+    createEffect(actionBattle.myPos.x, actionBattle.myPos.y, '💚');
+    showDamageText(actionBattle.myPos.x, actionBattle.myPos.y, healAmount, false, true);
+    addActionLog(`💊 아이템 사용! +${healAmount} HP`);
+    updateCooldownDisplay();
+}
+
+// 쿨다운 업데이트
+function updateCooldowns(deltaTime) {
+    // 버튼 활성화/비활성화
+    updateCooldownDisplay();
+}
+
+function updateCooldownDisplay() {
+    const now = Date.now();
+
+    const buttons = [
+        { btn: actionElements.meleeBtn, cooldown: actionBattle.cooldowns.melee, totalCd: 1000 },
+        { btn: actionElements.rangedBtn, cooldown: actionBattle.cooldowns.ranged, totalCd: 2000 },
+        { btn: actionElements.defendBtn, cooldown: actionBattle.cooldowns.defend, totalCd: 5000 },
+        { btn: actionElements.itemBtn, cooldown: actionBattle.cooldowns.item, totalCd: 10000 }
+    ];
+
+    for (const { btn, cooldown, totalCd } of buttons) {
+        if (!btn) continue;
+
+        const remaining = cooldown - now;
+        if (remaining > 0) {
+            btn.disabled = true;
+            // 쿨다운 오버레이 표시
+            let overlay = btn.querySelector('.cooldown-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.className = 'cooldown-overlay';
+                btn.appendChild(overlay);
+            }
+            overlay.textContent = Math.ceil(remaining / 1000) + 's';
+        } else {
+            btn.disabled = false;
+            const overlay = btn.querySelector('.cooldown-overlay');
+            if (overlay) overlay.remove();
+        }
+    }
+}
+
+// 상대 위치 업데이트 (서버에서 수신)
+function updateEnemyPosition(data) {
+    if (!actionBattle.active) return;
+
+    // 부드러운 보간
+    const lerpFactor = 0.3;
+    actionBattle.enemyPos.x += (data.x - actionBattle.enemyPos.x) * lerpFactor;
+    actionBattle.enemyPos.y += (data.y - actionBattle.enemyPos.y) * lerpFactor;
+
+    // 상대 방어 상태 업데이트
+    if (data.defending && !actionBattle.enemyDefending) {
+        actionBattle.enemyDefending = true;
+        actionBattle.enemyDefendUntil = Date.now() + 2000;
+        if (actionElements.enemyPet) {
+            actionElements.enemyPet.classList.add('defending');
+        }
+    }
+
+    // 방향 전환
+    if (actionElements.enemyPet) {
+        const distanceX = actionBattle.myPos.x - actionBattle.enemyPos.x;
+        if (distanceX > 0) {
+            actionElements.enemyPet.classList.add('facing-left');
+            actionElements.enemyPet.classList.remove('facing-right');
+        } else {
+            actionElements.enemyPet.classList.add('facing-right');
+            actionElements.enemyPet.classList.remove('facing-left');
+        }
+    }
+}
+
+// 상대 공격 수신 처리
+function handleEnemyAttack(data) {
+    if (!actionBattle.active) return;
+
+    // 공격 애니메이션
+    if (actionElements.enemyPet) {
+        actionElements.enemyPet.classList.add('attacking');
+        setTimeout(() => actionElements.enemyPet.classList.remove('attacking'), 200);
+    }
+
+    // 데미지 계산 (방어 중이면 감소)
+    let damage = data.damage;
+    if (actionBattle.myDefending) {
+        damage *= 0.3;
+    }
+
+    // 데미지 적용
+    actionBattle.myHp -= damage;
+    updateHpDisplay();
+
+    // 피격 효과
+    if (actionElements.myPet) {
+        actionElements.myPet.classList.add('hit');
+        setTimeout(() => actionElements.myPet.classList.remove('hit'), 300);
+    }
+
+    // 이펙트
+    if (data.type === 'melee') {
+        createEffect(actionBattle.myPos.x, actionBattle.myPos.y, '💥');
+    }
+    showDamageText(actionBattle.myPos.x, actionBattle.myPos.y, damage, data.isCritical);
+}
+
+// 상대 원거리 공격 발사체 생성
+function handleEnemyProjectile(data) {
+    if (!actionBattle.active) return;
+
+    const direction = actionBattle.myPos.x > actionBattle.enemyPos.x ? 1 : -1;
+    const projectile = {
+        id: Date.now() + Math.random(),
+        x: actionBattle.enemyPos.x,
+        y: actionBattle.enemyPos.y + 30,
+        velX: direction * actionBattle.PROJECTILE_SPEED * 0.8,
+        damage: data.damage || 10,
+        isPlayer: false,
+        element: null
+    };
+
+    const projElement = document.createElement('div');
+    projElement.className = 'projectile enemy-projectile';
+    projElement.textContent = '⭐';
+    projElement.style.left = projectile.x + '%';
+    projElement.style.bottom = projectile.y + 'px';
+    if (actionElements.projectilesContainer) {
+        actionElements.projectilesContainer.appendChild(projElement);
+    }
+    projectile.element = projElement;
+
+    actionBattle.projectiles.push(projectile);
+}
+
+// 이펙트 생성
+function createEffect(x, y, emoji) {
+    if (!actionElements.effectsContainer) return;
+
+    const effect = document.createElement('div');
+    effect.className = 'battle-effect';
+    effect.textContent = emoji;
+    effect.style.left = x + '%';
+    effect.style.bottom = y + 'px';
+    actionElements.effectsContainer.appendChild(effect);
+
+    setTimeout(() => effect.remove(), 500);
+}
+
+// 데미지 텍스트
+function showDamageText(x, y, damage, isCritical, isHeal = false) {
+    if (!actionElements.effectsContainer) return;
+
+    const text = document.createElement('div');
+    text.className = 'damage-text' + (isCritical ? ' critical' : '') + (isHeal ? ' heal' : '');
+    text.textContent = (isHeal ? '+' : '-') + Math.floor(damage);
+    text.style.left = x + '%';
+    text.style.bottom = (y + 50) + 'px';
+    actionElements.effectsContainer.appendChild(text);
+
+    setTimeout(() => text.remove(), 1000);
+}
+
+// 로그 추가
+function addActionLog(message) {
+    if (!actionElements.battleLog) return;
+
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.textContent = message;
+    actionElements.battleLog.appendChild(entry);
+    actionElements.battleLog.scrollTop = actionElements.battleLog.scrollHeight;
+
+    // 오래된 로그 제거
+    while (actionElements.battleLog.children.length > 10) {
+        actionElements.battleLog.removeChild(actionElements.battleLog.firstChild);
+    }
+}
+
+// 액션 배틀 종료
+function endActionBattle() {
+    actionBattle.active = false;
+
+    // 타이머 정지
+    if (actionBattle.timerInterval) {
+        clearInterval(actionBattle.timerInterval);
+        actionBattle.timerInterval = null;
+    }
+
+    // 게임 루프 정지
+    if (actionBattle.gameLoop) {
+        cancelAnimationFrame(actionBattle.gameLoop);
+        actionBattle.gameLoop = null;
+    }
+
+    // 발사체 제거
+    for (const proj of actionBattle.projectiles) {
+        if (proj.element) proj.element.remove();
+    }
+    actionBattle.projectiles = [];
+
+    // 결과 판정
+    let result;
+    if (actionBattle.myHp <= 0) {
+        result = 'lose';
+        addActionLog('💔 패배...');
+    } else if (actionBattle.enemyHp <= 0) {
+        result = 'win';
+        addActionLog('🏆 승리!');
+    } else {
+        // 타이머 종료 - HP로 판정
+        result = actionBattle.myHp > actionBattle.enemyHp ? 'win' : 'lose';
+        addActionLog(result === 'win' ? '🏆 시간 종료 - 승리!' : '💔 시간 종료 - 패배...');
+    }
+
+    // 서버에 결과 알림
+    socket.emit('action-battle-end', { result: result });
+
+    // 5초 후 로비로 돌아가기
+    setTimeout(() => {
+        elements.battleScreen.style.transition = 'opacity 0.5s';
+        elements.battleScreen.style.opacity = '0';
+
+        setTimeout(() => {
+            elements.battleScreen.classList.remove('active');
+            elements.lobbyScreen.classList.add('active');
+            elements.lobbyScreen.style.opacity = '0';
+
+            setTimeout(() => {
+                elements.lobbyScreen.style.transition = 'opacity 0.5s';
+                elements.lobbyScreen.style.opacity = '1';
+            }, 10);
+
+            gameState.battle = null;
+            gameState.isMatching = false;
+        }, 500);
+    }, 3000);
+}
+
+// 소켓 이벤트 수정: 배틀 시작시 액션 배틀로 전환
+socket.on('battle-started', (battle) => {
+    gameState.isMatching = false;
+    gameState.battle = battle;
+
+    // 매칭 토스트 자동 닫기
+    hideMatchingStatus();
+    elements.notificationModal.classList.add('hidden');
+
+    // 화면 전환 애니메이션
+    elements.lobbyScreen.style.transition = 'opacity 0.5s';
+    elements.lobbyScreen.style.opacity = '0';
+
+    setTimeout(() => {
+        elements.lobbyScreen.classList.remove('active');
+        elements.battleScreen.classList.add('active');
+        elements.battleScreen.style.opacity = '0';
+
+        setTimeout(() => {
+            elements.battleScreen.style.transition = 'opacity 0.5s';
+            elements.battleScreen.style.opacity = '1';
+
+            // 액션 배틀 시작
+            initActionBattle();
+            startActionBattle(battle);
+        }, 10);
+    }, 500);
+
+    elements.matchBtn.classList.remove('hidden');
+    elements.cancelMatchBtn.classList.add('hidden');
+});
+
+// 상대 위치 수신 (멀티플레이어 동기화)
+socket.on('action-position', (data) => {
+    updateEnemyPosition(data);
+});
+
+// 상대 근접 공격 수신
+socket.on('action-melee', (data) => {
+    handleEnemyAttack({ type: 'melee', damage: data.damage, isCritical: data.isCritical });
+});
+
+// 상대 원거리 공격 수신
+socket.on('action-ranged', (data) => {
+    handleEnemyProjectile(data);
+});
+
+// 상대 방어 수신
+socket.on('action-defend', (data) => {
+    actionBattle.enemyDefending = true;
+    actionBattle.enemyDefendUntil = Date.now() + 2000;
+    if (actionElements.enemyPet) {
+        actionElements.enemyPet.classList.add('defending');
+        createEffect(actionBattle.enemyPos.x, actionBattle.enemyPos.y, '🛡️');
+    }
+});
+
+// 상대 회복 수신
+socket.on('action-heal', (data) => {
+    if (actionElements.enemyPet) {
+        actionElements.enemyPet.classList.add('healing');
+        setTimeout(() => actionElements.enemyPet.classList.remove('healing'), 500);
+        createEffect(actionBattle.enemyPos.x, actionBattle.enemyPos.y, '💚');
+    }
+});
+
+// 상대 HP 동기화
+socket.on('action-hp-sync', (data) => {
+    actionBattle.enemyHp = data.hp;
+    updateHpDisplay();
 });
 
 // ========================================
