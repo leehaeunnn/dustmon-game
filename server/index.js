@@ -290,7 +290,9 @@ io.on('connection', (socket) => {
       return;
     }
     
-    BattleSystem.processBattleAction(battle, socket.id, action, currentSensorData);
+    BattleSystem.updateBattleState(battle);
+    const result = BattleSystem.processBattleAction(battle, socket.id, action, currentSensorData);
+    if (!result.success) { socket.emit("action-failed", { message: result.message, cooldown: result.cooldown }); return; }
     
     // 배틀 상태 브로드캐스트
     // 배틀 업데이트 전송 (깨끗한 복사본)
@@ -365,6 +367,124 @@ io.on('connection', (socket) => {
         timestamp: Date.now()
       });
     }
+  });
+
+  // ========== 액션 배틀 멀티플레이어 동기화 ==========
+
+  // 위치 동기화
+  socket.on('action-position', (data) => {
+    const player = connectedPlayers.get(socket.id);
+    if (!player || !player.battleId) return;
+
+    const battle = activeBattles.get(player.battleId);
+    if (!battle) return;
+
+    // 상대 플레이어에게 위치 전송
+    const opponentId = battle.player1Id === socket.id ? battle.player2Id : battle.player1Id;
+    io.to(opponentId).emit('action-position', data);
+  });
+
+  // 근접 공격 동기화
+  socket.on('action-melee', (data) => {
+    const player = connectedPlayers.get(socket.id);
+    if (!player || !player.battleId) return;
+
+    const battle = activeBattles.get(player.battleId);
+    if (!battle) return;
+
+    // 상대 플레이어에게 공격 알림
+    const opponentId = battle.player1Id === socket.id ? battle.player2Id : battle.player1Id;
+    io.to(opponentId).emit('action-melee', data);
+  });
+
+  // 원거리 공격 동기화
+  socket.on('action-ranged', (data) => {
+    const player = connectedPlayers.get(socket.id);
+    if (!player || !player.battleId) return;
+
+    const battle = activeBattles.get(player.battleId);
+    if (!battle) return;
+
+    // 상대 플레이어에게 발사체 생성 알림
+    const opponentId = battle.player1Id === socket.id ? battle.player2Id : battle.player1Id;
+    io.to(opponentId).emit('action-ranged', data);
+  });
+
+  // 방어 동기화
+  socket.on('action-defend', (data) => {
+    const player = connectedPlayers.get(socket.id);
+    if (!player || !player.battleId) return;
+
+    const battle = activeBattles.get(player.battleId);
+    if (!battle) return;
+
+    // 상대 플레이어에게 방어 상태 알림
+    const opponentId = battle.player1Id === socket.id ? battle.player2Id : battle.player1Id;
+    io.to(opponentId).emit('action-defend', data);
+  });
+
+  // 회복 동기화
+  socket.on('action-heal', (data) => {
+    const player = connectedPlayers.get(socket.id);
+    if (!player || !player.battleId) return;
+
+    const battle = activeBattles.get(player.battleId);
+    if (!battle) return;
+
+    // 상대 플레이어에게 회복 이펙트 및 HP 동기화
+    const opponentId = battle.player1Id === socket.id ? battle.player2Id : battle.player1Id;
+    io.to(opponentId).emit('action-heal', data);
+    io.to(opponentId).emit('action-hp-sync', { hp: data.hp });
+  });
+
+  // 액션 배틀 종료
+  socket.on('action-battle-end', (data) => {
+    const player = connectedPlayers.get(socket.id);
+    if (!player || !player.battleId) return;
+
+    const battle = activeBattles.get(player.battleId);
+    if (!battle || battle.status === 'finished') return;
+
+    // 승패 처리
+    battle.status = 'finished';
+    if (data.result === 'win') {
+      battle.winner = battle.player1Id === socket.id ? 'player1' : 'player2';
+    } else {
+      battle.winner = battle.player1Id === socket.id ? 'player2' : 'player1';
+    }
+
+    // 보상 처리
+    const winnerId = battle.winner === 'player1' ? battle.player1Id : battle.player2Id;
+    const loserId = battle.winner === 'player1' ? battle.player2Id : battle.player1Id;
+    const winner = connectedPlayers.get(winnerId);
+    const loser = connectedPlayers.get(loserId);
+
+    if (winner && winner.pet) {
+      const expReward = 200 + winner.pet.level * 20;
+      const goldReward = 100 + winner.pet.level * 10;
+      GameLogic.addExperience(winner.pet, expReward);
+      if (!winner.pet.gold) winner.pet.gold = 0;
+      winner.pet.gold += goldReward;
+      winner.pet.battleWins = (winner.pet.battleWins || 0) + 1;
+      winner.pet.totalBattles = (winner.pet.totalBattles || 0) + 1;
+
+      io.to(winnerId).emit('battle-reward', { result: 'win', expReward, goldReward });
+    }
+
+    if (loser && loser.pet) {
+      const expReward = 50 + loser.pet.level * 5;
+      const goldReward = 25 + loser.pet.level * 2;
+      GameLogic.addExperience(loser.pet, expReward);
+      if (!loser.pet.gold) loser.pet.gold = 0;
+      loser.pet.gold += goldReward;
+      loser.pet.totalBattles = (loser.pet.totalBattles || 0) + 1;
+
+      io.to(loserId).emit('battle-reward', { result: 'lose', expReward, goldReward });
+    }
+
+    setTimeout(() => {
+      cleanupBattle(battle.id);
+    }, 3000);
   });
 
   // ========== 펫 케어 이벤트 ==========
