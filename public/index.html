@@ -299,56 +299,95 @@
             </div>
         </div>
 
-        <!-- 배틀 화면 -->
+        <!-- 배틀 화면 (액션 RPG 스타일) -->
         <div id="battle-screen" class="screen">
-            <div class="battle-container">
-                <div class="battle-header">
-                    <div class="battle-title" id="battle-title">배틀 진행 중</div>
-                    <div class="field-effect" id="field-effect">필드: 보통</div>
-                </div>
-
-                <div class="battle-arena">
-                    <!-- 플레이어 1 (왼쪽) -->
-                    <div class="battle-pet battle-pet-left">
-                        <div class="battle-pet-name" id="battle-pet1-name">펫1</div>
-                        <div class="battle-pet-sprite" id="battle-pet1-sprite">🐾</div>
-                        <div class="battle-pet-hp">
-                            <div class="hp-bar">
-                                <div class="hp-bar-fill" id="battle-pet1-hp-bar"></div>
-                            </div>
-                            <div class="hp-text" id="battle-pet1-hp-text">100/100</div>
+            <div class="action-battle-container">
+                <!-- 상단 HUD -->
+                <div class="battle-hud">
+                    <!-- 내 정보 (왼쪽) -->
+                    <div class="hud-player hud-left">
+                        <div class="hud-name" id="hud-my-name">나</div>
+                        <div class="hud-hp-bar">
+                            <div class="hud-hp-fill" id="hud-my-hp"></div>
                         </div>
+                        <div class="hud-hp-text" id="hud-my-hp-text">100/100</div>
                     </div>
-
-                    <!-- VS 표시 -->
-                    <div class="vs-indicator">VS</div>
-
-                    <!-- 플레이어 2 (오른쪽) -->
-                    <div class="battle-pet battle-pet-right">
-                        <div class="battle-pet-name" id="battle-pet2-name">펫2</div>
-                        <div class="battle-pet-sprite" id="battle-pet2-sprite">🐾</div>
-                        <div class="battle-pet-hp">
-                            <div class="hp-bar">
-                                <div class="hp-bar-fill" id="battle-pet2-hp-bar"></div>
-                            </div>
-                            <div class="hp-text" id="battle-pet2-hp-text">100/100</div>
+                    <!-- 필드 효과 -->
+                    <div class="hud-center">
+                        <div class="field-effect" id="field-effect">보통</div>
+                        <div class="battle-timer" id="battle-timer">60</div>
+                    </div>
+                    <!-- 상대 정보 (오른쪽) -->
+                    <div class="hud-player hud-right">
+                        <div class="hud-name" id="hud-enemy-name">상대</div>
+                        <div class="hud-hp-bar">
+                            <div class="hud-hp-fill enemy" id="hud-enemy-hp"></div>
                         </div>
+                        <div class="hud-hp-text" id="hud-enemy-hp-text">100/100</div>
                     </div>
                 </div>
 
-                <!-- 배틀 로그 -->
-                <div class="battle-log" id="battle-log"></div>
-
-                <!-- 배틀 액션 버튼 -->
-                <div class="battle-actions" id="battle-actions">
-                    <button class="battle-action-btn" data-action="attack">⚔️ 공격</button>
-                    <button class="battle-action-btn" data-action="defend">🛡️ 방어</button>
-                    <button class="battle-action-btn" data-action="skill" data-skill="heal">💚 회복</button>
-                    <button class="battle-action-btn" data-action="skill" data-skill="power_attack">💥 강공격</button>
+                <!-- 배틀 아레나 (게임 필드) -->
+                <div class="action-arena" id="action-arena">
+                    <!-- 내 펫 -->
+                    <div class="action-pet my-pet" id="my-pet">
+                        <div class="pet-sprite" id="my-pet-sprite">🐾</div>
+                        <div class="pet-shadow"></div>
+                    </div>
+                    <!-- 상대 펫 -->
+                    <div class="action-pet enemy-pet" id="enemy-pet">
+                        <div class="pet-sprite" id="enemy-pet-sprite">🐾</div>
+                        <div class="pet-shadow"></div>
+                    </div>
+                    <!-- 발사체 컨테이너 -->
+                    <div id="projectiles-container"></div>
+                    <!-- 이펙트 컨테이너 -->
+                    <div id="effects-container"></div>
                 </div>
 
-                <!-- 턴 표시 -->
-                <div class="turn-indicator" id="turn-indicator">턴 1</div>
+                <!-- 하단 컨트롤 -->
+                <div class="battle-controls">
+                    <!-- 왼쪽: 조이스틱 (이동) -->
+                    <div class="control-left">
+                        <div class="joystick-container" id="joystick-container">
+                            <div class="joystick-base">
+                                <div class="joystick-stick" id="joystick-stick"></div>
+                            </div>
+                        </div>
+                        <div class="move-keys">
+                            <span>WASD / 방향키</span>
+                        </div>
+                    </div>
+
+                    <!-- 가운데: 배틀 로그 -->
+                    <div class="control-center">
+                        <div class="mini-battle-log" id="battle-log"></div>
+                    </div>
+
+                    <!-- 오른쪽: 액션 버튼 -->
+                    <div class="control-right">
+                        <button class="action-btn attack-btn" id="melee-btn" data-action="melee">
+                            <span class="btn-icon">⚔️</span>
+                            <span class="btn-label">근접</span>
+                            <span class="btn-key">Z</span>
+                        </button>
+                        <button class="action-btn ranged-btn" id="ranged-btn" data-action="ranged">
+                            <span class="btn-icon">🎯</span>
+                            <span class="btn-label">원거리</span>
+                            <span class="btn-key">X</span>
+                        </button>
+                        <button class="action-btn defend-btn" id="defend-btn" data-action="defend">
+                            <span class="btn-icon">🛡️</span>
+                            <span class="btn-label">방어</span>
+                            <span class="btn-key">C</span>
+                        </button>
+                        <button class="action-btn item-btn" id="item-btn" data-action="item">
+                            <span class="btn-icon">💊</span>
+                            <span class="btn-label">아이템</span>
+                            <span class="btn-key">V</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
