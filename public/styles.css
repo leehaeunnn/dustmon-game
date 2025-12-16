@@ -1000,6 +1000,159 @@ body::before {
 }
 
 /* ========================================
+   전투 액션 애니메이션
+   ======================================== */
+
+/* 공격 돌진 - 왼쪽 펫 */
+@keyframes attackRushLeft {
+    0% { transform: translateX(0) scale(1); }
+    30% { transform: translateX(80px) scale(1.2); }
+    50% { transform: translateX(100px) scale(1.3); }
+    70% { transform: translateX(80px) scale(1.2); }
+    100% { transform: translateX(0) scale(1); }
+}
+
+/* 공격 돌진 - 오른쪽 펫 */
+@keyframes attackRushRight {
+    0% { transform: translateX(0) scale(1); }
+    30% { transform: translateX(-80px) scale(1.2); }
+    50% { transform: translateX(-100px) scale(1.3); }
+    70% { transform: translateX(-80px) scale(1.2); }
+    100% { transform: translateX(0) scale(1); }
+}
+
+/* 강공격 - 왼쪽 펫 */
+@keyframes powerAttackLeft {
+    0% { transform: translateX(0) scale(1) rotate(0deg); }
+    20% { transform: translateX(-30px) scale(1.3) rotate(-15deg); }
+    50% { transform: translateX(120px) scale(1.5) rotate(15deg); }
+    70% { transform: translateX(80px) scale(1.2) rotate(5deg); }
+    100% { transform: translateX(0) scale(1) rotate(0deg); }
+}
+
+/* 강공격 - 오른쪽 펫 */
+@keyframes powerAttackRight {
+    0% { transform: translateX(0) scale(1) rotate(0deg); }
+    20% { transform: translateX(30px) scale(1.3) rotate(15deg); }
+    50% { transform: translateX(-120px) scale(1.5) rotate(-15deg); }
+    70% { transform: translateX(-80px) scale(1.2) rotate(-5deg); }
+    100% { transform: translateX(0) scale(1) rotate(0deg); }
+}
+
+/* 피격 넉백 - 왼쪽 펫 */
+@keyframes hitKnockbackLeft {
+    0% { transform: translateX(0); filter: brightness(1); }
+    20% { transform: translateX(-30px); filter: brightness(2) sepia(1) saturate(5) hue-rotate(-50deg); }
+    40% { transform: translateX(-20px); filter: brightness(1.5); }
+    60% { transform: translateX(-25px); filter: brightness(1); }
+    100% { transform: translateX(0); filter: brightness(1); }
+}
+
+/* 피격 넉백 - 오른쪽 펫 */
+@keyframes hitKnockbackRight {
+    0% { transform: translateX(0); filter: brightness(1); }
+    20% { transform: translateX(30px); filter: brightness(2) sepia(1) saturate(5) hue-rotate(-50deg); }
+    40% { transform: translateX(20px); filter: brightness(1.5); }
+    60% { transform: translateX(25px); filter: brightness(1); }
+    100% { transform: translateX(0); filter: brightness(1); }
+}
+
+/* 방어 자세 */
+@keyframes defendStance {
+    0% { transform: scale(1); filter: brightness(1); }
+    30% { transform: scale(0.9); filter: brightness(1.5) hue-rotate(180deg); }
+    70% { transform: scale(0.85); filter: brightness(1.3) hue-rotate(180deg); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* 회복 애니메이션 */
+@keyframes healEffect {
+    0% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 0 transparent); }
+    50% { transform: scale(1.15); filter: brightness(1.5) drop-shadow(0 0 30px #4CAF50); }
+    100% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 0 transparent); }
+}
+
+/* 회피 동작 */
+@keyframes dodgeLeft {
+    0% { transform: translateX(0) translateY(0); }
+    30% { transform: translateX(-50px) translateY(-30px); opacity: 0.7; }
+    60% { transform: translateX(-30px) translateY(-15px); opacity: 0.9; }
+    100% { transform: translateX(0) translateY(0); opacity: 1; }
+}
+
+@keyframes dodgeRight {
+    0% { transform: translateX(0) translateY(0); }
+    30% { transform: translateX(50px) translateY(-30px); opacity: 0.7; }
+    60% { transform: translateX(30px) translateY(-15px); opacity: 0.9; }
+    100% { transform: translateX(0) translateY(0); opacity: 1; }
+}
+
+/* 애니메이션 클래스 */
+.attack-animation-left {
+    animation: attackRushLeft 0.6s ease-out;
+}
+
+.attack-animation-right {
+    animation: attackRushRight 0.6s ease-out;
+}
+
+.power-attack-animation-left {
+    animation: powerAttackLeft 0.8s ease-out;
+}
+
+.power-attack-animation-right {
+    animation: powerAttackRight 0.8s ease-out;
+}
+
+.hit-animation-left {
+    animation: hitKnockbackLeft 0.5s ease-out;
+}
+
+.hit-animation-right {
+    animation: hitKnockbackRight 0.5s ease-out;
+}
+
+.defend-animation {
+    animation: defendStance 0.8s ease-in-out;
+}
+
+.heal-effect-animation {
+    animation: healEffect 0.8s ease-in-out;
+}
+
+.dodge-animation-left {
+    animation: dodgeLeft 0.5s ease-out;
+}
+
+.dodge-animation-right {
+    animation: dodgeRight 0.5s ease-out;
+}
+
+/* 방어 상태 표시 */
+.defending {
+    filter: drop-shadow(0 0 15px #2196F3) brightness(1.2);
+    transition: filter 0.3s;
+}
+
+/* 이펙트 오버레이 */
+.battle-effect-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 60px;
+    animation: effectPop 0.8s ease-out forwards;
+    pointer-events: none;
+    z-index: 100;
+}
+
+@keyframes effectPop {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+    50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+}
+
+/* ========================================
    반응형 디자인
    ======================================== */
 @media (max-width: 768px) {
@@ -1633,4 +1786,777 @@ body::before {
     .ranking-rank {
         min-width: auto;
     }
+}
+
+/* ========================================
+   매칭 토스트 (확인 버튼 없이 자동 표시)
+   ======================================== */
+.matching-toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px 50px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 20px;
+    font-weight: 600;
+    box-shadow: 0 20px 60px rgba(102, 126, 234, 0.5);
+    z-index: 10000;
+    animation: toastAppear 0.5s ease-out;
+}
+
+.matching-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes toastAppear {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* ========================================
+   배틀 이펙트 오버레이
+   ======================================== */
+.battle-effect-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 80px;
+    animation: effectPop 0.8s ease-out forwards;
+    z-index: 100;
+    pointer-events: none;
+}
+
+@keyframes effectPop {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.5);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2);
+    }
+}
+
+/* ========================================
+   액션 RPG 배틀 시스템 스타일
+   ======================================== */
+
+/* 배틀 컨테이너 */
+.action-battle-container {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--bg-overlay);
+    backdrop-filter: blur(20px);
+    border-radius: var(--border-radius-xl);
+    padding: 20px;
+    box-shadow: var(--shadow-xl);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+/* 상단 HUD */
+.battle-hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--border-radius-md);
+    margin-bottom: 15px;
+}
+
+.hud-player {
+    flex: 1;
+    max-width: 200px;
+}
+
+.hud-left {
+    text-align: left;
+}
+
+.hud-right {
+    text-align: right;
+}
+
+.hud-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hud-hp-bar {
+    width: 100%;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hud-hp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+    width: 100%;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+}
+
+.hud-hp-fill.enemy {
+    background: linear-gradient(90deg, #f44336, #ff9800);
+    box-shadow: 0 0 10px rgba(244, 67, 54, 0.5);
+}
+
+.hud-hp-fill.low {
+    background: linear-gradient(90deg, #f44336, #ff5722);
+    animation: pulse 1s infinite;
+}
+
+.hud-hp-text {
+    font-size: 12px;
+    color: white;
+    margin-top: 3px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.hud-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.hud-center .field-effect {
+    font-size: 12px;
+    padding: 5px 15px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    color: white;
+}
+
+.battle-timer {
+    font-size: 28px;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* 배틀 아레나 */
+.action-arena {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    background: linear-gradient(180deg,
+        rgba(135, 206, 235, 0.3) 0%,
+        rgba(144, 238, 144, 0.3) 100%);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    margin-bottom: 15px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+/* 아레나 바닥 패턴 */
+.action-arena::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(180deg,
+        transparent 0%,
+        rgba(139, 195, 74, 0.4) 50%,
+        rgba(76, 175, 80, 0.5) 100%);
+    border-top: 2px dashed rgba(255, 255, 255, 0.3);
+}
+
+/* 아레나 그리드 라인 - 제거됨 */
+
+/* 액션 펫 */
+.action-pet {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: left 0.05s linear, bottom 0.05s linear;
+    z-index: 10;
+}
+
+.action-pet .pet-sprite {
+    font-size: 80px;
+    filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
+    transition: transform 0.1s ease;
+}
+
+.action-pet .pet-sprite img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+.action-pet .pet-shadow {
+    width: 60px;
+    height: 15px;
+    background: radial-gradient(ellipse, rgba(0, 0, 0, 0.4) 0%, transparent 70%);
+    margin-top: -10px;
+}
+
+/* 내 펫 초기 위치 (왼쪽) */
+.action-pet.my-pet {
+    left: 15%;
+    bottom: 100px;
+}
+
+/* 상대 펫 초기 위치 (오른쪽) */
+.action-pet.enemy-pet {
+    left: 75%;
+    bottom: 100px;
+}
+
+/* 펫 방향 전환 */
+.action-pet.facing-right .pet-sprite {
+    transform: scaleX(1);
+}
+
+.action-pet.facing-left .pet-sprite {
+    transform: scaleX(-1);
+}
+
+/* 펫 상태 효과 */
+.action-pet.attacking .pet-sprite {
+    animation: attackPulse 0.2s ease-out;
+}
+
+.action-pet.hit .pet-sprite {
+    animation: hitFlash 0.3s ease-out;
+    filter: brightness(2) sepia(1) saturate(5) hue-rotate(-50deg);
+}
+
+.action-pet.defending .pet-sprite {
+    filter: drop-shadow(0 0 20px #2196F3) brightness(1.2);
+}
+
+.action-pet.healing .pet-sprite {
+    filter: drop-shadow(0 0 20px #4CAF50) brightness(1.3);
+}
+
+@keyframes attackPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+@keyframes hitFlash {
+    0%, 100% { opacity: 1; }
+    25%, 75% { opacity: 0.3; }
+    50% { opacity: 1; }
+}
+
+/* 발사체 */
+#projectiles-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.projectile {
+    position: absolute;
+    font-size: 30px;
+    transition: none;
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
+}
+
+.projectile.player-projectile {
+    animation: projectileSpin 0.3s linear infinite;
+}
+
+.projectile.enemy-projectile {
+    animation: projectileSpin 0.3s linear infinite reverse;
+}
+
+@keyframes projectileSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 이펙트 */
+#effects-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 15;
+}
+
+.battle-effect {
+    position: absolute;
+    font-size: 40px;
+    animation: effectBurst 0.5s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes effectBurst {
+    0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.5) rotate(180deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* 데미지 텍스트 */
+.damage-text {
+    position: absolute;
+    font-size: 24px;
+    font-weight: 900;
+    color: #ff4444;
+    text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+    animation: damageFloat 1s ease-out forwards;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.damage-text.heal {
+    color: #44ff44;
+}
+
+.damage-text.critical {
+    font-size: 32px;
+    color: #ffff00;
+}
+
+@keyframes damageFloat {
+    0% {
+        transform: translateY(0) scale(0.5);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-30px) scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-60px) scale(1);
+        opacity: 0;
+    }
+}
+
+/* 하단 컨트롤 */
+.battle-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--border-radius-md);
+}
+
+/* 조이스틱 영역 */
+.control-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.joystick-container {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.joystick-base {
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.joystick-stick {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(145deg, #ffffff, #e0e0e0);
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    cursor: grab;
+    transition: transform 0.05s ease-out;
+    position: absolute;
+}
+
+.joystick-stick:active {
+    cursor: grabbing;
+}
+
+.move-keys {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+}
+
+/* 미니 배틀 로그 */
+.control-center {
+    flex: 1;
+    max-width: 250px;
+}
+
+.mini-battle-log {
+    height: 100px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--border-radius-sm);
+    padding: 10px;
+    font-size: 12px;
+    color: white;
+}
+
+.mini-battle-log::-webkit-scrollbar {
+    width: 4px;
+}
+
+.mini-battle-log::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+
+.log-entry {
+    margin-bottom: 5px;
+    padding: 3px 5px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    animation: fadeIn 0.3s ease;
+}
+
+/* 액션 버튼 영역 */
+.control-right {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.action-btn {
+    width: 70px;
+    height: 70px;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    transition: all 0.15s ease;
+    font-family: 'Noto Sans KR', sans-serif;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.action-btn .btn-icon {
+    font-size: 24px;
+}
+
+.action-btn .btn-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+}
+
+.action-btn .btn-key {
+    position: absolute;
+    bottom: 3px;
+    right: 5px;
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+}
+
+/* 공격 버튼 (빨간색) */
+.action-btn.attack-btn {
+    background: linear-gradient(145deg, #f44336, #c62828);
+    box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+}
+
+.action-btn.attack-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(244, 67, 54, 0.6);
+}
+
+.action-btn.attack-btn:active {
+    transform: translateY(0) scale(0.95);
+}
+
+/* 원거리 버튼 (파란색) */
+.action-btn.ranged-btn {
+    background: linear-gradient(145deg, #2196F3, #1565C0);
+    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+}
+
+.action-btn.ranged-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.6);
+}
+
+.action-btn.ranged-btn:active {
+    transform: translateY(0) scale(0.95);
+}
+
+/* 방어 버튼 (녹색) */
+.action-btn.defend-btn {
+    background: linear-gradient(145deg, #4CAF50, #2E7D32);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+}
+
+.action-btn.defend-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
+}
+
+.action-btn.defend-btn:active {
+    transform: translateY(0) scale(0.95);
+}
+
+/* 아이템 버튼 (보라색) */
+.action-btn.item-btn {
+    background: linear-gradient(145deg, #9C27B0, #6A1B9A);
+    box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+}
+
+.action-btn.item-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(156, 39, 176, 0.6);
+}
+
+.action-btn.item-btn:active {
+    transform: translateY(0) scale(0.95);
+}
+
+/* 버튼 비활성화 */
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* 버튼 쿨다운 오버레이 */
+.action-btn .cooldown-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    border-radius: 15px;
+}
+
+/* 반응형 - 모바일 */
+@media (max-width: 768px) {
+    .action-battle-container {
+        padding: 10px;
+        border-radius: var(--border-radius-md);
+    }
+
+    .battle-hud {
+        padding: 10px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .hud-player {
+        max-width: 120px;
+    }
+
+    .hud-name {
+        font-size: 12px;
+    }
+
+    .hud-hp-bar {
+        height: 15px;
+    }
+
+    .battle-timer {
+        font-size: 22px;
+    }
+
+    .action-arena {
+        height: 280px;
+    }
+
+    .action-pet .pet-sprite {
+        font-size: 60px;
+    }
+
+    .action-pet .pet-sprite img {
+        width: 60px;
+        height: 60px;
+    }
+
+    .battle-controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .control-left {
+        order: 2;
+    }
+
+    .control-center {
+        order: 3;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .control-right {
+        order: 1;
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .joystick-base {
+        width: 80px;
+        height: 80px;
+    }
+
+    .joystick-stick {
+        width: 40px;
+        height: 40px;
+    }
+
+    .action-btn {
+        width: 60px;
+        height: 60px;
+    }
+
+    .action-btn .btn-icon {
+        font-size: 20px;
+    }
+
+    .action-btn .btn-label {
+        font-size: 9px;
+    }
+
+    .mini-battle-log {
+        height: 60px;
+    }
+}
+
+/* 아이템 선택 모달 */
+.item-select-modal {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    background: white;
+    border-radius: var(--border-radius-md);
+    padding: 10px;
+    box-shadow: var(--shadow-lg);
+    display: none;
+    z-index: 100;
+    min-width: 150px;
+}
+
+.item-select-modal.show {
+    display: block;
+    animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.item-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: var(--border-radius-sm);
+    transition: background 0.2s;
+}
+
+.item-option:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.item-option .item-icon {
+    font-size: 20px;
+}
+
+.item-option .item-info {
+    flex: 1;
+}
+
+.item-option .item-name {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.item-option .item-count {
+    font-size: 10px;
+    color: var(--text-secondary);
 }
