@@ -423,6 +423,22 @@ io.on('connection', (socket) => {
     io.to(opponentId).emit('action-defend', data);
   });
 
+  // 공격 데미지 동기화
+  socket.on('action-battle-attack', (data) => {
+    const player = connectedPlayers.get(socket.id);
+    if (!player || !player.battleId) return;
+
+    const battle = activeBattles.get(player.battleId);
+    if (!battle) return;
+
+    // 상대 플레이어에게 데미지 전달
+    const opponentId = battle.player1Id === socket.id ? battle.player2Id : battle.player1Id;
+    io.to(opponentId).emit('action-take-damage', {
+      damage: data.damage,
+      type: data.type
+    });
+  });
+
   // 회복 동기화
   socket.on('action-heal', (data) => {
     const player = connectedPlayers.get(socket.id);

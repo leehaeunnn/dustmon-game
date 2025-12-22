@@ -2211,7 +2211,22 @@ function performMeleeAttack() {
         const isCritical = Math.random() < 0.15;
         if (isCritical) damage *= 1.5;
 
-        // 로그
+        // 방어 중이면 데미지 감소
+        if (actionBattle.enemyDefending) {
+            damage *= 0.3;
+        }
+
+        // 상대 HP 감소 (로컬)
+        actionBattle.enemyHp -= damage;
+        updateHpDisplay();
+
+        // 피격 효과
+        if (actionElements.enemyPet) {
+            actionElements.enemyPet.classList.add('hit');
+            setTimeout(() => actionElements.enemyPet.classList.remove('hit'), 300);
+        }
+
+        showDamageText(actionBattle.enemyPos.x, actionBattle.enemyPos.y, damage, isCritical);
         addActionLog(`⚔️ 근접 공격! ${Math.floor(damage)} 데미지${isCritical ? ' (크리티컬!)' : ''}`);
 
         // 서버에 알림 (상대에게 전달됨)
@@ -2706,6 +2721,28 @@ socket.on('action-heal', (data) => {
 socket.on('action-hp-sync', (data) => {
     actionBattle.enemyHp = data.hp;
     updateHpDisplay();
+});
+
+// 상대방 공격으로 내가 데미지 받음
+socket.on('action-take-damage', (data) => {
+    if (!actionBattle.active) return;
+
+    let damage = data.damage;
+    if (actionBattle.myDefending) {
+        damage *= 0.3;
+    }
+
+    actionBattle.myHp -= damage;
+    updateHpDisplay();
+
+    // 피격 효과
+    if (actionElements.myPet) {
+        actionElements.myPet.classList.add('hit');
+        setTimeout(() => actionElements.myPet.classList.remove('hit'), 300);
+    }
+
+    showDamageText(actionBattle.myPos.x, actionBattle.myPos.y, damage, false);
+    addActionLog(`💥 ${data.type === 'melee' ? '근접' : '원거리'} 공격 받음! ${Math.floor(damage)} 데미지`);
 });
 
 // ========================================

@@ -200,13 +200,14 @@ function getFieldEffect(pm25) {
       devil: { speed: 1.3 },
       mutant: {}
     };
+  
   } else {
     return {
       name: '위험',
       angel: {},
       devil: {},
       mutant: { critical: 1.5 }
-    };
+    }; 
   }
 }
 
