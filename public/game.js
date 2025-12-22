@@ -2291,10 +2291,11 @@ function updateProjectiles(deltaTime) {
             proj.element.style.left = proj.x + '%';
         }
 
-        // 플레이어 발사체: 적과 충돌 체크
+        // 플레이어 발사체: 적과 충돌 체크 (X축, Y축 모두)
         if (proj.isPlayer) {
-            const hitDistance = Math.abs(proj.x - actionBattle.enemyPos.x);
-            if (hitDistance < 8) {
+            const hitDistanceX = Math.abs(proj.x - actionBattle.enemyPos.x);
+            const hitDistanceY = Math.abs(proj.y - actionBattle.enemyPos.y);
+            if (hitDistanceX < 8 && hitDistanceY < 50) {
                 // 데미지 적용
                 let damage = proj.damage;
                 if (actionBattle.enemyDefending) {
@@ -2316,9 +2317,10 @@ function updateProjectiles(deltaTime) {
                 toRemove.push(proj);
             }
         } else {
-            // 적 발사체: 플레이어와 충돌 체크
-            const hitDistance = Math.abs(proj.x - actionBattle.myPos.x);
-            if (hitDistance < 8) {
+            // 적 발사체: 플레이어와 충돌 체크 (X축, Y축 모두)
+            const hitDistanceX = Math.abs(proj.x - actionBattle.myPos.x);
+            const hitDistanceY = Math.abs(proj.y - actionBattle.myPos.y);
+            if (hitDistanceX < 8 && hitDistanceY < 50) {
                 let damage = proj.damage;
                 if (actionBattle.myDefending) {
                     damage *= 0.3;
